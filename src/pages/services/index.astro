@@ -44,49 +44,50 @@ const iconMap = {
       <div class="container mx-auto px-4">
         <div class="grid lg:grid-cols-2 gap-8">
           {services.map((service) => (
-            <Card class="group overflow-hidden bg-gradient-card border-border/50 hover-glow">
+            <Card class="group overflow-hidden bg-gradient-card border-border/50 hover-glow transform hover:scale-105 transition-all duration-500">
               <CardContent class="p-0">
                 <div class="relative overflow-hidden">
-                  <img
-                    src={`/src/assets/${service.data.imagePath}`}
-                    alt={service.data.title}
-                    class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div class="absolute top-4 left-4">
-                    <div class="p-3 bg-gradient-luxury rounded-xl text-white text-2xl">
+                  <div class="w-full h-64 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                    <div class="p-6 bg-gradient-luxury rounded-2xl text-white text-4xl transform group-hover:scale-110 transition-transform duration-500">
                       {iconMap[service.data.iconName] || '🎨'}
                     </div>
                   </div>
-                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div class="absolute top-4 right-4">
+                    <div class="px-4 py-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg">
+                      <span class="font-elegant text-lg font-bold text-primary">{service.data.price}</span>
+                    </div>
+                  </div>
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                     <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
-                      <div class="font-elegant text-2xl font-bold text-primary mb-2">
+                      <div class="text-sm opacity-90 mb-2">Prix de départ</div>
+                      <div class="font-elegant text-2xl font-bold">
                         {service.data.price}
                       </div>
                     </div>
                   </div>
                 </div>
-                <div class="p-6">
-                  <h3 class="font-elegant text-2xl font-bold text-foreground mb-3">
+                <div class="p-8">
+                  <h3 class="font-elegant text-2xl font-bold text-foreground mb-4 group-hover:text-primary transition-colors">
                     {service.data.title}
                   </h3>
-                  <p class="text-muted-foreground mb-6 leading-relaxed">
+                  <p class="text-muted-foreground mb-6 leading-relaxed text-base">
                     {service.data.description}
                   </p>
                   
-                  <div class="space-y-3 mb-6">
-                    {service.data.features.slice(0, 3).map((feature: string) => (
-                      <div class="flex items-center space-x-3">
-                        <div class="flex-shrink-0 w-5 h-5 bg-gradient-luxury rounded-full flex items-center justify-center">
-                          <span class="text-white text-xs font-bold">✓</span>
+                  <div class="space-y-4 mb-8">
+                    {service.data.features.slice(0, 4).map((feature: string) => (
+                      <div class="flex items-center space-x-4">
+                        <div class="flex-shrink-0 w-6 h-6 bg-gradient-luxury rounded-full flex items-center justify-center">
+                          <span class="text-white text-sm font-bold">✓</span>
                         </div>
-                        <span class="text-sm text-muted-foreground">{feature}</span>
+                        <span class="text-muted-foreground">{feature}</span>
                       </div>
                     ))}
                   </div>
                   
-                  <Button class="w-full bg-gradient-luxury hover-glow" asChild>
+                  <Button class="w-full bg-gradient-luxury hover-glow transform hover:scale-105 transition-all duration-300" asChild>
                     <a href={`/services/${service.id}`}>
-                      Découvrir ce service
+                      Découvrir ce service →
                     </a>
                   </Button>
                 </div>

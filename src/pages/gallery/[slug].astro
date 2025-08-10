@@ -81,39 +81,53 @@ const relatedItems = allGallery
         <div class="space-y-4">
           <!-- Main Image -->
           <div class="relative overflow-hidden rounded-2xl shadow-2xl">
-            <img
-              src={`/src/assets/${galleryItem.data.featuredImage}`}
-              alt={galleryItem.data.title}
-              class="w-full aspect-[4/5] object-cover"
-            />
+            <div class="w-full aspect-[4/5] bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+              <div class="text-center">
+                <div class="p-8 bg-gradient-luxury rounded-3xl text-white text-6xl mb-4 transform hover:scale-110 transition-transform duration-500">
+                  🎨
+                </div>
+                <div class="text-foreground font-semibold text-lg">{galleryItem.data.title}</div>
+                <div class="text-muted-foreground text-sm mt-2">{galleryItem.data.category}</div>
+              </div>
+            </div>
             <div class="absolute top-4 left-4">
-              <span class="px-3 py-1 bg-primary/90 text-primary-foreground rounded-full text-sm font-medium">
+              <span class="px-4 py-2 bg-primary/90 backdrop-blur-sm text-primary-foreground rounded-full text-sm font-medium shadow-lg">
                 {galleryItem.data.category}
               </span>
             </div>
             {galleryItem.data.isFeatured && (
               <div class="absolute top-4 right-4">
-                <span class="px-3 py-1 bg-gradient-luxury text-white rounded-full text-sm font-medium">
+                <span class="px-4 py-2 bg-gradient-luxury text-white rounded-full text-sm font-medium shadow-lg">
                   ⭐ Coup de cœur
                 </span>
               </div>
             )}
           </div>
 
-          <!-- Additional Images -->
-          {galleryItem.data.images.length > 1 && (
-            <div class="grid grid-cols-2 gap-4">
-              {galleryItem.data.images.slice(1, 3).map((image: string) => (
-                <div class="relative overflow-hidden rounded-lg shadow-lg">
-                  <img
-                    src={`/src/assets/${image}`}
-                    alt={`${galleryItem.data.title} - Vue ${galleryItem.data.images.indexOf(image) + 1}`}
-                    class="w-full aspect-[4/3] object-cover hover:scale-105 transition-transform duration-300"
-                  />
+          <!-- Additional Preview Cards -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="relative overflow-hidden rounded-lg shadow-lg">
+              <div class="w-full aspect-[4/3] bg-gradient-to-br from-secondary/20 to-muted/40 flex items-center justify-center">
+                <div class="text-center">
+                  <div class="p-4 bg-gradient-luxury rounded-xl text-white text-2xl mb-2">
+                    ✨
+                  </div>
+                  <div class="text-xs text-muted-foreground">Avant/Après</div>
                 </div>
-              ))}
+              </div>
             </div>
-          )}
+            <div class="relative overflow-hidden rounded-lg shadow-lg">
+              <div class="w-full aspect-[4/3] bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center">
+                <div class="text-center">
+                  <div class="p-4 bg-gradient-luxury rounded-xl text-white text-2xl mb-2">
+                    📸
+                  </div>
+                  <div class="text-xs text-muted-foreground">Détails</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         </div>
 
         <!-- Details -->

@@ -33,29 +33,50 @@ const iconMap = {
     <Header siteSettings={siteSettings} />
     
     {/* Hero Section */}
-    <section class="pt-24 pb-16">
+    <section class="pt-24 pb-16 bg-gradient-to-br from-background to-muted/50">
       <div class="container mx-auto px-4">
-        <div class="max-w-4xl mx-auto text-center">
-          <div class="flex justify-center mb-6">
-            <div class="p-4 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-2xl text-white text-4xl">
-              {iconMap[service.data.iconName] || '🎨'}
+        <div class="max-w-6xl mx-auto">
+          <!-- Breadcrumb -->
+          <nav class="flex items-center space-x-2 text-sm text-muted-foreground mb-8">
+            <a href="/" class="hover:text-primary transition-colors">Accueil</a>
+            <span>›</span>
+            <a href="/services" class="hover:text-primary transition-colors">Services</a>
+            <span>›</span>
+            <span class="text-foreground">{service.data.title}</span>
+          </nav>
+
+          <div class="text-center">
+            <div class="flex justify-center mb-8">
+              <div class="p-8 bg-gradient-luxury rounded-3xl text-white text-6xl shadow-2xl transform hover:scale-105 transition-transform duration-500">
+                {iconMap[service.data.iconName] || '🎨'}
+              </div>
             </div>
-          </div>
-          
-          <h1 class="font-elegant text-4xl lg:text-6xl font-bold text-foreground mb-6">
-            {service.data.title}
-          </h1>
-          
-          <p class="text-xl text-muted-foreground mb-8 leading-relaxed">
-            {service.data.description}
-          </p>
-          
-          <div class="flex flex-wrap justify-center gap-4 mb-12">
-            <div class="flex items-center bg-gradient-card border border-border/50 rounded-lg px-4 py-2">
-              <span class="font-elegant text-2xl font-bold text-primary mr-2">
-                {service.data.price}
-              </span>
-              <span class="text-muted-foreground">/ prestation</span>
+            
+            <h1 class="font-elegant text-4xl lg:text-7xl font-bold text-foreground mb-6">
+              {service.data.title}
+            </h1>
+            
+            <p class="text-xl lg:text-2xl text-muted-foreground mb-8 leading-relaxed max-w-3xl mx-auto">
+              {service.data.description}
+            </p>
+            
+            <div class="flex flex-wrap justify-center gap-6 mb-12">
+              <div class="flex items-center bg-gradient-card border border-border/50 rounded-xl px-8 py-4 shadow-lg">
+                <span class="font-elegant text-3xl font-bold text-primary mr-3">
+                  {service.data.price}
+                </span>
+                <div class="text-left">
+                  <div class="text-sm text-muted-foreground">À partir de</div>
+                  <div class="text-sm font-medium text-foreground">par prestation</div>
+                </div>
+              </div>
+              <div class="flex items-center bg-gradient-card border border-border/50 rounded-xl px-8 py-4 shadow-lg">
+                <span class="text-2xl mr-3">⏱️</span>
+                <div class="text-left">
+                  <div class="text-sm text-muted-foreground">Durée</div>
+                  <div class="font-semibold text-foreground">2-4h selon prestation</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -65,21 +86,99 @@ const iconMap = {
     {/* Service Details */}
     <section class="py-16">
       <div class="container mx-auto px-4">
-        <div class="max-w-4xl mx-auto">
-          <div class="bg-gradient-card border border-border/50 rounded-2xl p-8 luxury-shadow">
-            <h2 class="font-elegant text-3xl font-bold text-foreground mb-8 text-center">
-              Ce qui est inclus
-            </h2>
-            
-            <div class="grid md:grid-cols-2 gap-6">
-              {service.data.features.map((feature, index) => (
-                <div key={index} class="flex items-start space-x-3">
-                  <div class="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full flex items-center justify-center mt-0.5">
-                    <span class="text-white text-sm font-bold">✓</span>
+        <div class="max-w-6xl mx-auto">
+          <div class="grid lg:grid-cols-2 gap-12 items-start">
+            <!-- Left Column: Features -->
+            <div>
+              <h2 class="font-elegant text-3xl font-bold text-foreground mb-8">
+                Ce service inclut
+              </h2>
+              
+              <div class="space-y-6">
+                {service.data.features.map((feature, index) => (
+                  <div key={index} class="flex items-start space-x-4 bg-gradient-card border border-border/50 rounded-xl p-6 luxury-shadow">
+                    <div class="flex-shrink-0 w-8 h-8 bg-gradient-luxury rounded-full flex items-center justify-center mt-1">
+                      <span class="text-white font-bold">{index + 1}</span>
+                    </div>
+                    <div>
+                      <span class="text-foreground font-medium text-lg leading-relaxed">{feature}</span>
+                    </div>
                   </div>
-                  <span class="text-muted-foreground">{feature}</span>
+                ))}
+              </div>
+            </div>
+
+            <!-- Right Column: Process & Benefits -->
+            <div class="space-y-8">
+              <div class="bg-gradient-card border border-border/50 rounded-2xl p-8 luxury-shadow">
+                <h3 class="font-elegant text-2xl font-bold text-foreground mb-6 flex items-center">
+                  <span class="text-2xl mr-3">✨</span>
+                  Pourquoi choisir ce service ?
+                </h3>
+                <ul class="space-y-4">
+                  <li class="flex items-center space-x-3">
+                    <span class="w-2 h-2 bg-primary rounded-full"></span>
+                    <span class="text-muted-foreground">Techniques professionnelles exclusives</span>
+                  </li>
+                  <li class="flex items-center space-x-3">
+                    <span class="w-2 h-2 bg-primary rounded-full"></span>
+                    <span class="text-muted-foreground">Produits haut de gamme certifiés</span>
+                  </li>
+                  <li class="flex items-center space-x-3">
+                    <span class="w-2 h-2 bg-primary rounded-full"></span>
+                    <span class="text-muted-foreground">Personnalisation selon vos goûts</span>
+                  </li>
+                  <li class="flex items-center space-x-3">
+                    <span class="w-2 h-2 bg-primary rounded-full"></span>
+                    <span class="text-muted-foreground">Résultat longue durée garanti</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="bg-gradient-card border border-border/50 rounded-2xl p-8 luxury-shadow">
+                <h3 class="font-elegant text-2xl font-bold text-foreground mb-6 flex items-center">
+                  <span class="text-2xl mr-3">📋</span>
+                  Déroulement
+                </h3>
+                <div class="space-y-4">
+                  <div class="flex items-start space-x-4">
+                    <div class="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <span class="text-primary text-xs font-bold">1</span>
+                    </div>
+                    <div>
+                      <div class="font-medium text-foreground">Consultation personnalisée</div>
+                      <div class="text-sm text-muted-foreground">Analyse de vos besoins et de votre style</div>
+                    </div>
+                  </div>
+                  <div class="flex items-start space-x-4">
+                    <div class="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <span class="text-primary text-xs font-bold">2</span>
+                    </div>
+                    <div>
+                      <div class="font-medium text-foreground">Préparation de la peau</div>
+                      <div class="text-sm text-muted-foreground">Soins et base pour un résultat optimal</div>
+                    </div>
+                  </div>
+                  <div class="flex items-start space-x-4">
+                    <div class="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <span class="text-primary text-xs font-bold">3</span>
+                    </div>
+                    <div>
+                      <div class="font-medium text-foreground">Application experte</div>
+                      <div class="text-sm text-muted-foreground">Techniques professionnelles sur mesure</div>
+                    </div>
+                  </div>
+                  <div class="flex items-start space-x-4">
+                    <div class="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <span class="text-primary text-xs font-bold">4</span>
+                    </div>
+                    <div>
+                      <div class="font-medium text-foreground">Finitions et conseils</div>
+                      <div class="text-sm text-muted-foreground">Retouches et conseils d'entretien</div>
+                    </div>
+                  </div>
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         </div>
@@ -87,30 +186,40 @@ const iconMap = {
     </section>
 
     {/* CTA Section */}
-    <section class="py-16">
+    <section class="py-16 bg-gradient-to-br from-muted/30 to-background">
       <div class="container mx-auto px-4">
-        <div class="max-w-2xl mx-auto text-center">
-          <div class="bg-gradient-card border border-border/50 rounded-2xl p-8 luxury-shadow">
-            <h2 class="font-elegant text-3xl font-bold text-foreground mb-4">
-              Réservez votre prestation
+        <div class="max-w-4xl mx-auto text-center">
+          <div class="bg-gradient-card border border-border/50 rounded-3xl p-12 luxury-shadow">
+            <div class="mb-8">
+              <div class="inline-block p-4 bg-gradient-luxury rounded-2xl text-white text-4xl mb-6">
+                📞
+              </div>
+            </div>
+            <h2 class="font-elegant text-3xl lg:text-4xl font-bold text-foreground mb-6">
+              Prêt(e) pour votre transformation ?
             </h2>
-            <p class="text-muted-foreground mb-8">
-              Contactez-moi pour discuter de vos besoins et programmer votre rendez-vous.
+            <p class="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
+              Réservez dès maintenant votre prestation <strong>{service.data.title}</strong> et découvrez l'art du maquillage professionnel adapté à votre personnalité unique.
             </p>
             
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <a 
-                href="#contact"
-                class="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-lg font-medium hover:shadow-lg transition-all duration-300"
+                href="/#contact"
+                class="inline-flex items-center justify-center px-10 py-5 bg-gradient-luxury text-white rounded-xl font-semibold text-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
               >
-                Prendre rendez-vous
+                Réserver maintenant
+                <span class="ml-2">→</span>
               </a>
               <a 
-                href="/"
-                class="inline-flex items-center justify-center px-8 py-4 border border-border text-foreground rounded-lg font-medium hover:bg-muted transition-all duration-300"
+                href="/services"
+                class="inline-flex items-center justify-center px-10 py-5 border-2 border-border text-foreground rounded-xl font-semibold text-lg hover:bg-muted transform hover:scale-105 transition-all duration-300"
               >
-                ← Retour à l'accueil
+                ← Voir tous nos services
               </a>
+            </div>
+            
+            <div class="mt-8 text-sm text-muted-foreground">
+              <p>✨ Consultation gratuite • 🎨 Devis personnalisé • ⭐ Satisfaction garantie</p>
             </div>
           </div>
         </div>
