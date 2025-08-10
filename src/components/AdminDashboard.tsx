@@ -137,6 +137,27 @@ interface SiteSettings {
   social_facebook: string;
   social_tiktok: string;
   business_hours: string;
+  smtp_host?: string;
+  smtp_port?: number;
+  smtp_username?: string;
+  smtp_password?: string;
+  smtp_secure?: boolean;
+  smtp_from_name?: string;
+}
+
+interface ContactMessage {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string;
+  subject?: string;
+  message: string;
+  status: 'new' | 'read' | 'replied' | 'archived';
+  admin_reply?: string;
+  replied_at?: string;
+  replied_by?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface Parameter {
@@ -190,6 +211,7 @@ const AdminDashboard: React.FC = () => {
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [contactMessages, setContactMessages] = useState<ContactMessage[]>([]);
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
   const [parameters, setParameters] = useState<Parameter[]>([]);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
@@ -236,7 +258,8 @@ const AdminDashboard: React.FC = () => {
   });
   
   const [settingsFormData, setSettingsFormData] = useState({
-    site_name: '', site_description: '', contact_email: '', contact_phone: '', contact_address: '', social_instagram: '', social_facebook: '', social_tiktok: '', business_hours: ''
+    site_name: '', site_description: '', contact_email: '', contact_phone: '', contact_address: '', social_instagram: '', social_facebook: '', social_tiktok: '', business_hours: '',
+    smtp_host: '', smtp_port: 587, smtp_username: '', smtp_password: '', smtp_secure: true, smtp_from_name: 'Neill Beauty Contact'
   });
   
   const [galleryFormData, setGalleryFormData] = useState({
@@ -263,6 +286,7 @@ const AdminDashboard: React.FC = () => {
         loadFaqs(),
         loadReservations(),
         loadGalleryItems(),
+        loadContactMessages(),
         loadSiteSettings(),
         loadParameters(),
         loadTimeSlots(),
@@ -405,6 +429,18 @@ const AdminDashboard: React.FC = () => {
       }
     } catch (error) {
       console.error('Erreur lors du chargement des factures:', error);
+    }
+  };
+
+  const loadContactMessages = async () => {
+    try {
+      const response = await fetch('/api/admin/contact-messages');
+      if (response.ok) {
+        const data = await response.json();
+        setContactMessages(data.messages || []);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des messages de contact:', error);
     }
   };
 
@@ -1044,7 +1080,7 @@ const AdminDashboard: React.FC = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-1">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-1">
             <TabsTrigger value="settings" className="flex items-center gap-2 bg-gradient-luxury text-white data-[state=active]:bg-gradient-luxury">
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Paramètres</span>
@@ -1061,6 +1097,10 @@ const AdminDashboard: React.FC = () => {
               <Receipt className="h-4 w-4" />
               <span className="hidden sm:inline">Factures</span>
             </TabsTrigger>
+            <TabsTrigger value="contact-messages" className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />
+              <span className="hidden sm:inline">Messages</span>
+            </TabsTrigger>
             <TabsTrigger value="services" className="flex items-center gap-2">
               <Briefcase className="h-4 w-4" />
               <span className="hidden sm:inline">Services</span>
@@ -1074,7 +1114,7 @@ const AdminDashboard: React.FC = () => {
               <span className="hidden sm:inline">Équipe</span>
             </TabsTrigger>
             <TabsTrigger value="testimonials" className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
+              <Star className="h-4 w-4" />
               <span className="hidden sm:inline">Témoignages</span>
             </TabsTrigger>
             <TabsTrigger value="gallery" className="flex items-center gap-2">
@@ -2437,6 +2477,104 @@ const AdminDashboard: React.FC = () => {
                       </div>
                     </div>
 
+                    {/* SMTP Configuration */}
+                    <div className="border-t pt-6 space-y-4">
+                      <h3 className="text-lg font-semibold text-foreground border-b pb-2 mb-4 flex items-center gap-2">
+                        <Mail className="h-5 w-5 text-primary" />
+                        Configuration SMTP - Envoi d'emails
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="settings-smtp-host" className="text-sm font-medium text-foreground">
+                            Serveur SMTP
+                          </Label>
+                          <Input
+                            id="settings-smtp-host"
+                            value={settingsFormData.smtp_host || ''}
+                            onChange={(e) => setSettingsFormData(prev => ({ ...prev, smtp_host: e.target.value }))}
+                            placeholder="smtp.gmail.com"
+                            className="mt-1 border-2 border-gray-200 focus:border-primary"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Adresse du serveur SMTP</p>
+                        </div>
+                        <div>
+                          <Label htmlFor="settings-smtp-port" className="text-sm font-medium text-foreground">
+                            Port SMTP
+                          </Label>
+                          <Input
+                            id="settings-smtp-port"
+                            type="number"
+                            value={settingsFormData.smtp_port || ''}
+                            onChange={(e) => setSettingsFormData(prev => ({ ...prev, smtp_port: parseInt(e.target.value) || 587 }))}
+                            placeholder="587"
+                            className="mt-1 border-2 border-gray-200 focus:border-primary"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Port du serveur SMTP (587 pour TLS)</p>
+                        </div>
+                        <div>
+                          <Label htmlFor="settings-smtp-username" className="text-sm font-medium text-foreground">
+                            Nom d'utilisateur SMTP
+                          </Label>
+                          <Input
+                            id="settings-smtp-username"
+                            value={settingsFormData.smtp_username || ''}
+                            onChange={(e) => setSettingsFormData(prev => ({ ...prev, smtp_username: e.target.value }))}
+                            placeholder="votre@email.com"
+                            className="mt-1 border-2 border-gray-200 focus:border-primary"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Email d'authentification SMTP</p>
+                        </div>
+                        <div>
+                          <Label htmlFor="settings-smtp-password" className="text-sm font-medium text-foreground">
+                            Mot de passe SMTP
+                          </Label>
+                          <Input
+                            id="settings-smtp-password"
+                            type="password"
+                            value={settingsFormData.smtp_password || ''}
+                            onChange={(e) => setSettingsFormData(prev => ({ ...prev, smtp_password: e.target.value }))}
+                            placeholder="•••••••••••"
+                            className="mt-1 border-2 border-gray-200 focus:border-primary"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Mot de passe ou token d'application</p>
+                        </div>
+                        <div>
+                          <Label htmlFor="settings-smtp-from-name" className="text-sm font-medium text-foreground">
+                            Nom de l'expéditeur
+                          </Label>
+                          <Input
+                            id="settings-smtp-from-name"
+                            value={settingsFormData.smtp_from_name || ''}
+                            onChange={(e) => setSettingsFormData(prev => ({ ...prev, smtp_from_name: e.target.value }))}
+                            placeholder="Neill Beauty Contact"
+                            className="mt-1 border-2 border-gray-200 focus:border-primary"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Nom affiché dans les emails envoyés</p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id="settings-smtp-secure"
+                            checked={settingsFormData.smtp_secure || false}
+                            onChange={(e) => setSettingsFormData(prev => ({ ...prev, smtp_secure: e.target.checked }))}
+                            className="rounded border-gray-300"
+                          />
+                          <Label htmlFor="settings-smtp-secure" className="text-sm font-medium text-foreground">
+                            Connexion sécurisée (TLS/SSL)
+                          </Label>
+                        </div>
+                      </div>
+                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
+                        <h4 className="text-blue-800 dark:text-blue-200 font-medium mb-2">💡 Configuration SMTP</h4>
+                        <p className="text-blue-700 dark:text-blue-300 text-sm mb-2">
+                          Pour utiliser Gmail, utilisez smtp.gmail.com avec le port 587 et activez l'authentification à 2 facteurs pour générer un mot de passe d'application.
+                        </p>
+                        <p className="text-blue-700 dark:text-blue-300 text-sm">
+                          Les messages de contact seront automatiquement envoyés vers l'email de contact configuré ci-dessus.
+                        </p>
+                      </div>
+                    </div>
+
                     {/* Save Button */}
                     <div className="border-t pt-6">
                       <div className="flex justify-between items-center">
@@ -2578,6 +2716,171 @@ const AdminDashboard: React.FC = () => {
                       </tbody>
                     </table>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Contact Messages Tab */}
+          <TabsContent value="contact-messages">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Gestion des Messages de Contact</CardTitle>
+                  <div className="text-sm text-gray-500">
+                    {contactMessages.filter(m => m.status === 'new').length} nouveau(x) message(s)
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {contactMessages.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      Aucun message de contact reçu
+                    </div>
+                  ) : (
+                    contactMessages.map((message) => (
+                      <div key={message.id} className="p-4 border rounded-lg bg-white">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="text-lg font-medium">{message.name}</h3>
+                              <Badge 
+                                variant={
+                                  message.status === 'new' ? 'destructive' :
+                                  message.status === 'read' ? 'secondary' :
+                                  message.status === 'replied' ? 'default' : 'outline'
+                                }
+                              >
+                                {message.status === 'new' ? 'Nouveau' :
+                                 message.status === 'read' ? 'Lu' :
+                                 message.status === 'replied' ? 'Répondu' : 'Archivé'}
+                              </Badge>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 text-sm mb-3">
+                              <div>
+                                <span className="text-gray-500">Email:</span>
+                                <span className="ml-2">{message.email}</span>
+                              </div>
+                              {message.phone && (
+                                <div>
+                                  <span className="text-gray-500">Téléphone:</span>
+                                  <span className="ml-2">{message.phone}</span>
+                                </div>
+                              )}
+                              {message.subject && (
+                                <div className="col-span-2">
+                                  <span className="text-gray-500">Sujet:</span>
+                                  <span className="ml-2">{message.subject}</span>
+                                </div>
+                              )}
+                              <div className="col-span-2">
+                                <span className="text-gray-500">Date:</span>
+                                <span className="ml-2">{new Date(message.created_at).toLocaleString('fr-FR')}</span>
+                              </div>
+                            </div>
+                            <div className="mb-3">
+                              <span className="text-gray-500">Message:</span>
+                              <div className="mt-1 p-3 bg-gray-50 rounded border">
+                                <p className="text-gray-700 whitespace-pre-wrap">{message.message}</p>
+                              </div>
+                            </div>
+                            {message.admin_reply && (
+                              <div className="mb-3 border-l-4 border-blue-200 pl-4">
+                                <span className="text-blue-600 font-medium">Réponse admin:</span>
+                                <div className="mt-1 p-3 bg-blue-50 rounded border">
+                                  <p className="text-gray-700 whitespace-pre-wrap">{message.admin_reply}</p>
+                                </div>
+                                <div className="text-xs text-gray-500 mt-2">
+                                  Répondu par {message.replied_by} le {message.replied_at && new Date(message.replied_at).toLocaleString('fr-FR')}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {message.status === 'new' && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={async () => {
+                                try {
+                                  const response = await fetch('/api/admin/contact-messages', {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ id: message.id, status: 'read' })
+                                  });
+                                  if (response.ok) {
+                                    await loadContactMessages();
+                                  }
+                                } catch (error) {
+                                  console.error('Erreur lors de la mise à jour:', error);
+                                }
+                              }}
+                            >
+                              Marquer comme lu
+                            </Button>
+                          )}
+                          {message.status !== 'replied' && (
+                            <Button 
+                              size="sm"
+                              onClick={() => {
+                                // TODO: Open reply modal
+                                console.log('Ouvrir modal de réponse pour:', message.id);
+                              }}
+                            >
+                              <MessageSquare className="h-4 w-4 mr-1" />
+                              Répondre
+                            </Button>
+                          )}
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={async () => {
+                              const newStatus = message.status === 'archived' ? 'read' : 'archived';
+                              try {
+                                const response = await fetch('/api/admin/contact-messages', {
+                                  method: 'PUT',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ id: message.id, status: newStatus })
+                                });
+                                if (response.ok) {
+                                  await loadContactMessages();
+                                }
+                              } catch (error) {
+                                console.error('Erreur lors de la mise à jour:', error);
+                              }
+                            }}
+                          >
+                            {message.status === 'archived' ? 'Désarchiver' : 'Archiver'}
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="destructive"
+                            onClick={async () => {
+                              if (confirm('Êtes-vous sûr de vouloir supprimer ce message ?')) {
+                                try {
+                                  const response = await fetch('/api/admin/contact-messages', {
+                                    method: 'DELETE',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ id: message.id })
+                                  });
+                                  if (response.ok) {
+                                    await loadContactMessages();
+                                  }
+                                } catch (error) {
+                                  console.error('Erreur lors de la suppression:', error);
+                                }
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Supprimer
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
