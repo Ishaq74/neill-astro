@@ -23,7 +23,11 @@ import {
   Star,
   Calendar,
   Image,
-  Instagram
+  Instagram,
+  Clock,
+  Receipt,
+  Mail,
+  CreditCard
 } from 'lucide-react';
 
 interface Service {
@@ -135,6 +139,48 @@ interface SiteSettings {
   business_hours: string;
 }
 
+interface Parameter {
+  id: number;
+  key: string;
+  value: string;
+  description: string;
+  category: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface TimeSlot {
+  id: number;
+  date: string;
+  start_time: string;
+  end_time: string;
+  is_available: boolean;
+  service_type: string | null;
+  reserved_by: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Invoice {
+  id: number;
+  reservation_id: number | null;
+  invoice_number: string;
+  customer_name: string;
+  customer_email: string;
+  service_name: string;
+  amount: number;
+  paid_amount: number;
+  status: 'pending' | 'partially_paid' | 'paid' | 'cancelled';
+  payment_method: string | null;
+  payment_intent_id: string | null;
+  due_date: string | null;
+  issued_date: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 const AdminDashboard: React.FC = () => {
   // State for all sections
   const [services, setServices] = useState<Service[]>([]);
@@ -145,6 +191,9 @@ const AdminDashboard: React.FC = () => {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
+  const [parameters, setParameters] = useState<Parameter[]>([]);
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('settings'); // Start with settings tab
@@ -214,7 +263,10 @@ const AdminDashboard: React.FC = () => {
         loadFaqs(),
         loadReservations(),
         loadGalleryItems(),
-        loadSiteSettings()
+        loadSiteSettings(),
+        loadParameters(),
+        loadTimeSlots(),
+        loadInvoices()
       ]);
     } catch (error) {
       console.error('Erreur lors du chargement des données:', error);
@@ -317,6 +369,42 @@ const AdminDashboard: React.FC = () => {
       }
     } catch (error) {
       console.error('Erreur lors du chargement de la galerie:', error);
+    }
+  };
+
+  const loadParameters = async () => {
+    try {
+      const response = await fetch('/api/admin/parameters');
+      if (response.ok) {
+        const data = await response.json();
+        setParameters(data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des paramètres:', error);
+    }
+  };
+
+  const loadTimeSlots = async () => {
+    try {
+      const response = await fetch('/api/admin/time-slots');
+      if (response.ok) {
+        const data = await response.json();
+        setTimeSlots(data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des créneaux:', error);
+    }
+  };
+
+  const loadInvoices = async () => {
+    try {
+      const response = await fetch('/api/admin/invoices');
+      if (response.ok) {
+        const data = await response.json();
+        setInvoices(data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des factures:', error);
     }
   };
 
@@ -956,10 +1044,22 @@ const AdminDashboard: React.FC = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-1">
             <TabsTrigger value="settings" className="flex items-center gap-2 bg-gradient-luxury text-white data-[state=active]:bg-gradient-luxury">
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Paramètres</span>
+            </TabsTrigger>
+            <TabsTrigger value="time-slots" className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              <span className="hidden sm:inline">Créneaux</span>
+            </TabsTrigger>
+            <TabsTrigger value="reservations" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span className="hidden sm:inline">Réservations</span>
+            </TabsTrigger>
+            <TabsTrigger value="invoices" className="flex items-center gap-2">
+              <Receipt className="h-4 w-4" />
+              <span className="hidden sm:inline">Factures</span>
             </TabsTrigger>
             <TabsTrigger value="services" className="flex items-center gap-2">
               <Briefcase className="h-4 w-4" />
@@ -968,10 +1068,6 @@ const AdminDashboard: React.FC = () => {
             <TabsTrigger value="formations" className="flex items-center gap-2">
               <GraduationCap className="h-4 w-4" />
               <span className="hidden sm:inline">Formations</span>
-            </TabsTrigger>
-            <TabsTrigger value="reservations" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <span className="hidden sm:inline">Réservations</span>
             </TabsTrigger>
             <TabsTrigger value="team" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
@@ -988,6 +1084,10 @@ const AdminDashboard: React.FC = () => {
             <TabsTrigger value="faqs" className="flex items-center gap-2">
               <HelpCircle className="h-4 w-4" />
               <span className="hidden sm:inline">FAQs</span>
+            </TabsTrigger>
+            <TabsTrigger value="system" className="flex items-center gap-2">
+              <Mail className="h-4 w-4" />
+              <span className="hidden sm:inline">Système</span>
             </TabsTrigger>
           </TabsList>
 
@@ -2366,6 +2466,416 @@ const AdminDashboard: React.FC = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Time Slots Tab */}
+          <TabsContent value="time-slots">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Gestion des Créneaux</CardTitle>
+                  <Button onClick={() => {/* TODO: Add new slot modal */}}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nouveau Créneau
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                      <Label>Filtrer par date</Label>
+                      <Input 
+                        type="date" 
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            // Filter time slots by date
+                            loadTimeSlots();
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className="flex items-end">
+                      <Button 
+                        onClick={() => loadTimeSlots()}
+                        variant="outline"
+                      >
+                        Actualiser
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse border border-border">
+                      <thead>
+                        <tr className="bg-muted">
+                          <th className="border border-border p-3 text-left">Date</th>
+                          <th className="border border-border p-3 text-left">Heure</th>
+                          <th className="border border-border p-3 text-left">Disponible</th>
+                          <th className="border border-border p-3 text-left">Service</th>
+                          <th className="border border-border p-3 text-left">Réservé par</th>
+                          <th className="border border-border p-3 text-left">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {timeSlots.map((slot) => (
+                          <tr key={slot.id}>
+                            <td className="border border-border p-3">{slot.date}</td>
+                            <td className="border border-border p-3">{slot.start_time} - {slot.end_time}</td>
+                            <td className="border border-border p-3">
+                              <Badge variant={slot.is_available ? "default" : "secondary"}>
+                                {slot.is_available ? 'Disponible' : 'Réservé'}
+                              </Badge>
+                            </td>
+                            <td className="border border-border p-3">{slot.service_type || 'Tous'}</td>
+                            <td className="border border-border p-3">{slot.reserved_by || '-'}</td>
+                            <td className="border border-border p-3">
+                              <div className="flex gap-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={async () => {
+                                    try {
+                                      await fetch('/api/admin/time-slots', {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                          id: slot.id,
+                                          is_available: !slot.is_available,
+                                          reserved_by: !slot.is_available ? null : slot.reserved_by
+                                        })
+                                      });
+                                      loadTimeSlots();
+                                    } catch (error) {
+                                      console.error('Erreur:', error);
+                                    }
+                                  }}
+                                >
+                                  {slot.is_available ? 'Bloquer' : 'Libérer'}
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="destructive"
+                                  onClick={async () => {
+                                    if (confirm('Supprimer ce créneau ?')) {
+                                      try {
+                                        await fetch(`/api/admin/time-slots?id=${slot.id}`, {
+                                          method: 'DELETE'
+                                        });
+                                        loadTimeSlots();
+                                      } catch (error) {
+                                        console.error('Erreur:', error);
+                                      }
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Invoices Tab */}
+          <TabsContent value="invoices">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Gestion des Factures</CardTitle>
+                  <Button onClick={() => {/* TODO: Add new invoice modal */}}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nouvelle Facture
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-border">
+                    <thead>
+                      <tr className="bg-muted">
+                        <th className="border border-border p-3 text-left">N° Facture</th>
+                        <th className="border border-border p-3 text-left">Client</th>
+                        <th className="border border-border p-3 text-left">Service</th>
+                        <th className="border border-border p-3 text-left">Montant</th>
+                        <th className="border border-border p-3 text-left">Payé</th>
+                        <th className="border border-border p-3 text-left">Statut</th>
+                        <th className="border border-border p-3 text-left">Date</th>
+                        <th className="border border-border p-3 text-left">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {invoices.map((invoice) => (
+                        <tr key={invoice.id}>
+                          <td className="border border-border p-3 font-mono text-sm">{invoice.invoice_number}</td>
+                          <td className="border border-border p-3">
+                            <div>
+                              <div className="font-medium">{invoice.customer_name}</div>
+                              <div className="text-sm text-muted-foreground">{invoice.customer_email}</div>
+                            </div>
+                          </td>
+                          <td className="border border-border p-3">{invoice.service_name}</td>
+                          <td className="border border-border p-3">{invoice.amount}€</td>
+                          <td className="border border-border p-3">{invoice.paid_amount}€</td>
+                          <td className="border border-border p-3">
+                            <Badge 
+                              variant={
+                                invoice.status === 'paid' ? 'default' : 
+                                invoice.status === 'partially_paid' ? 'secondary' : 
+                                'destructive'
+                              }
+                            >
+                              {invoice.status === 'paid' ? 'Payé' : 
+                               invoice.status === 'partially_paid' ? 'Partiellement payé' : 
+                               invoice.status === 'cancelled' ? 'Annulé' : 'En attente'}
+                            </Badge>
+                          </td>
+                          <td className="border border-border p-3">{invoice.issued_date}</td>
+                          <td className="border border-border p-3">
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="destructive"
+                                onClick={async () => {
+                                  if (confirm('Supprimer cette facture ?')) {
+                                    try {
+                                      await fetch(`/api/admin/invoices?id=${invoice.id}`, {
+                                        method: 'DELETE'
+                                      });
+                                      loadInvoices();
+                                    } catch (error) {
+                                      console.error('Erreur:', error);
+                                    }
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* System Settings Tab */}
+          <TabsContent value="system">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Mail className="h-5 w-5" />
+                    Configuration SMTP
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {parameters.filter(p => p.category === 'email').map((param) => (
+                      <div key={param.key}>
+                        <Label htmlFor={param.key}>{param.description}</Label>
+                        <Input
+                          id={param.key}
+                          type={param.key.includes('password') ? 'password' : 'text'}
+                          value={param.value}
+                          onChange={async (e) => {
+                            try {
+                              await fetch('/api/admin/parameters', {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  key: param.key,
+                                  value: e.target.value
+                                })
+                              });
+                              loadParameters();
+                            } catch (error) {
+                              console.error('Erreur:', error);
+                            }
+                          }}
+                          placeholder={param.description}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CreditCard className="h-5 w-5" />
+                    Configuration Stripe
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {parameters.filter(p => p.category === 'payment').map((param) => (
+                      <div key={param.key}>
+                        <Label htmlFor={param.key}>{param.description}</Label>
+                        {param.key === 'enable_payments' ? (
+                          <select
+                            className="w-full p-2 border border-border rounded"
+                            value={param.value}
+                            onChange={async (e) => {
+                              try {
+                                await fetch('/api/admin/parameters', {
+                                  method: 'PUT',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    key: param.key,
+                                    value: e.target.value
+                                  })
+                                });
+                                loadParameters();
+                              } catch (error) {
+                                console.error('Erreur:', error);
+                              }
+                            }}
+                          >
+                            <option value="false">Désactivé</option>
+                            <option value="true">Activé</option>
+                          </select>
+                        ) : (
+                          <Input
+                            id={param.key}
+                            type={param.key.includes('secret') ? 'password' : 'text'}
+                            value={param.value}
+                            onChange={async (e) => {
+                              try {
+                                await fetch('/api/admin/parameters', {
+                                  method: 'PUT',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    key: param.key,
+                                    value: e.target.value
+                                  })
+                                });
+                                loadParameters();
+                              } catch (error) {
+                                console.error('Erreur:', error);
+                              }
+                            }}
+                            placeholder={param.description}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    Google Calendar
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {parameters.filter(p => p.category === 'calendar').map((param) => (
+                      <div key={param.key}>
+                        <Label htmlFor={param.key}>{param.description}</Label>
+                        {param.key === 'enable_google_sync' ? (
+                          <select
+                            className="w-full p-2 border border-border rounded"
+                            value={param.value}
+                            onChange={async (e) => {
+                              try {
+                                await fetch('/api/admin/parameters', {
+                                  method: 'PUT',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    key: param.key,
+                                    value: e.target.value
+                                  })
+                                });
+                                loadParameters();
+                              } catch (error) {
+                                console.error('Erreur:', error);
+                              }
+                            }}
+                          >
+                            <option value="false">Désactivé</option>
+                            <option value="true">Activé</option>
+                          </select>
+                        ) : (
+                          <Input
+                            id={param.key}
+                            value={param.value}
+                            onChange={async (e) => {
+                              try {
+                                await fetch('/api/admin/parameters', {
+                                  method: 'PUT',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    key: param.key,
+                                    value: e.target.value
+                                  })
+                                });
+                                loadParameters();
+                              } catch (error) {
+                                console.error('Erreur:', error);
+                              }
+                            }}
+                            placeholder={param.description}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Paramètres Généraux</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {parameters.filter(p => p.category === 'general').map((param) => (
+                      <div key={param.key}>
+                        <Label htmlFor={param.key}>{param.description}</Label>
+                        <Input
+                          id={param.key}
+                          type={param.key.includes('hours') ? 'time' : 'number'}
+                          value={param.value}
+                          onChange={async (e) => {
+                            try {
+                              await fetch('/api/admin/parameters', {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  key: param.key,
+                                  value: e.target.value
+                                })
+                              });
+                              loadParameters();
+                            } catch (error) {
+                              console.error('Erreur:', error);
+                            }
+                          }}
+                          placeholder={param.description}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </main>

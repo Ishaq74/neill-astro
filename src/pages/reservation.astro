@@ -1,0 +1,10 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import ReservationPage from "@components/ReservationPage";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Réservation - Neill Beauty" description="Réservez votre séance beauté en ligne">
+  <ReservationPage client:load />
+</BaseLayout>
