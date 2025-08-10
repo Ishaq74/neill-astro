@@ -21,7 +21,8 @@ import {
   HelpCircle,
   Building2,
   Star,
-  Calendar
+  Calendar,
+  Image
 } from 'lucide-react';
 
 interface Service {
@@ -105,6 +106,21 @@ interface Reservation {
   updated_at: string;
 }
 
+interface GalleryItem {
+  id: number;
+  slug: string;
+  title: string;
+  description: string;
+  category: string;
+  service_id: number | null;
+  images: string[];
+  featured_image: string;
+  is_featured: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
 interface SiteSettings {
   id: number;
   site_name: string;
@@ -126,6 +142,7 @@ const AdminDashboard: React.FC = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
   
   const [loading, setLoading] = useState(true);
@@ -138,12 +155,14 @@ const AdminDashboard: React.FC = () => {
   const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
   const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
+  const [editingGalleryItem, setEditingGalleryItem] = useState<GalleryItem | null>(null);
   
   const [isCreatingService, setIsCreatingService] = useState(false);
   const [isCreatingFormation, setIsCreatingFormation] = useState(false);
   const [isCreatingTeamMember, setIsCreatingTeamMember] = useState(false);
   const [isCreatingTestimonial, setIsCreatingTestimonial] = useState(false);
   const [isCreatingFaq, setIsCreatingFaq] = useState(false);
+  const [isCreatingGalleryItem, setIsCreatingGalleryItem] = useState(false);
 
   // Form states
   const [serviceFormData, setServiceFormData] = useState({
@@ -169,10 +188,15 @@ const AdminDashboard: React.FC = () => {
   const [settingsFormData, setSettingsFormData] = useState({
     site_name: '', site_description: '', contact_email: '', contact_phone: '', contact_address: '', social_instagram: '', social_facebook: '', social_tiktok: '', business_hours: ''
   });
+  
+  const [galleryFormData, setGalleryFormData] = useState({
+    slug: '', title: '', description: '', category: 'Mariage', service_id: null, images: [''], featured_image: '', is_featured: false, sort_order: 0
+  });
 
   // Feature input helpers
   const [currentServiceFeature, setCurrentServiceFeature] = useState('');
   const [currentFormationFeature, setCurrentFormationFeature] = useState('');
+  const [currentGalleryImage, setCurrentGalleryImage] = useState('');
 
   useEffect(() => {
     loadAllData();
@@ -188,6 +212,7 @@ const AdminDashboard: React.FC = () => {
         loadTestimonials(),
         loadFaqs(),
         loadReservations(),
+        loadGalleryItems(),
         loadSiteSettings()
       ]);
     } catch (error) {
@@ -282,6 +307,18 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const loadGalleryItems = async () => {
+    try {
+      const response = await fetch('/api/admin/gallery');
+      if (response.ok) {
+        const result = await response.json();
+        setGalleryItems(result.data || []);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement de la galerie:', error);
+    }
+  };
+
   // Feature management helpers
   const addServiceFeature = () => {
     if (currentServiceFeature.trim()) {
@@ -348,6 +385,31 @@ const AdminDashboard: React.FC = () => {
     setFaqFormData({
       question: '', answer: '', category: 'general', sort_order: faqs.length + 1, is_active: 1
     });
+  };
+
+  // Gallery helpers
+  const addGalleryImage = () => {
+    if (currentGalleryImage.trim()) {
+      setGalleryFormData(prev => ({
+        ...prev,
+        images: [...prev.images, currentGalleryImage.trim()]
+      }));
+      setCurrentGalleryImage('');
+    }
+  };
+
+  const removeGalleryImage = (index: number) => {
+    setGalleryFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  const resetGalleryForm = () => {
+    setGalleryFormData({
+      slug: '', title: '', description: '', category: 'Mariage', service_id: null, images: [''], featured_image: '', is_featured: false, sort_order: galleryItems.length + 1
+    });
+    setCurrentGalleryImage('');
   };
 
   // Service CRUD operations
@@ -768,6 +830,81 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  // Gallery CRUD operations
+  const startEditingGalleryItem = (item: GalleryItem) => {
+    setEditingGalleryItem(item);
+    setGalleryFormData({
+      slug: item.slug,
+      title: item.title,
+      description: item.description,
+      category: item.category,
+      service_id: item.service_id,
+      images: item.images,
+      featured_image: item.featured_image,
+      is_featured: item.is_featured,
+      sort_order: item.sort_order
+    });
+  };
+
+  const startCreatingGalleryItem = () => {
+    setIsCreatingGalleryItem(true);
+    resetGalleryForm();
+  };
+
+  const cancelGalleryItemEdit = () => {
+    setEditingGalleryItem(null);
+    setIsCreatingGalleryItem(false);
+    resetGalleryForm();
+  };
+
+  const saveGalleryItem = async () => {
+    try {
+      let response;
+      const payload = {
+        ...galleryFormData,
+        images: galleryFormData.images.filter(img => img.trim() !== '')
+      };
+
+      if (editingGalleryItem) {
+        response = await fetch('/api/admin/gallery', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: editingGalleryItem.id, ...payload })
+        });
+      } else {
+        response = await fetch('/api/admin/gallery', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      if (response.ok) {
+        await loadGalleryItems();
+        cancelGalleryItemEdit();
+        alert(editingGalleryItem ? 'Élément mis à jour avec succès !' : 'Élément créé avec succès !');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+    }
+  };
+
+  const deleteGalleryItem = async (id: number) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cet élément de la galerie ?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/gallery?id=${id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        await loadGalleryItems();
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await fetch('/api/admin/auth', { method: 'DELETE' });
@@ -825,6 +962,10 @@ const AdminDashboard: React.FC = () => {
             <TabsTrigger value="testimonials" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               Témoignages
+            </TabsTrigger>
+            <TabsTrigger value="gallery" className="flex items-center gap-2">
+              <Image className="h-4 w-4" />
+              Galerie
             </TabsTrigger>
             <TabsTrigger value="faqs" className="flex items-center gap-2">
               <HelpCircle className="h-4 w-4" />
@@ -1814,6 +1955,203 @@ const AdminDashboard: React.FC = () => {
                           </Button>
                           <Button
                             onClick={() => deleteFaq(faq.id)}
+                            size="sm"
+                            variant="destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Gallery Tab */}
+          <TabsContent value="gallery">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gestion de la Galerie</CardTitle>
+                <Button onClick={startCreatingGalleryItem} className="ml-auto bg-gradient-luxury text-white">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ajouter un élément
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {(isCreatingGalleryItem || editingGalleryItem) && (
+                  <div className="p-6 border rounded-lg bg-gray-50 mb-6">
+                    <h3 className="text-lg font-medium mb-4">
+                      {editingGalleryItem ? 'Modifier l\'élément' : 'Nouvel élément de galerie'}
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="gallery-slug">Slug</Label>
+                        <Input
+                          id="gallery-slug"
+                          value={galleryFormData.slug}
+                          onChange={(e) => setGalleryFormData(prev => ({ ...prev, slug: e.target.value }))}
+                          placeholder="look-mariee-romantique"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="gallery-title">Titre</Label>
+                        <Input
+                          id="gallery-title"
+                          value={galleryFormData.title}
+                          onChange={(e) => setGalleryFormData(prev => ({ ...prev, title: e.target.value }))}
+                          placeholder="Look Mariée Romantique"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="gallery-category">Catégorie</Label>
+                        <select
+                          id="gallery-category"
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          value={galleryFormData.category}
+                          onChange={(e) => setGalleryFormData(prev => ({ ...prev, category: e.target.value }))}
+                        >
+                          <option value="Mariage">Mariage</option>
+                          <option value="Soirée">Soirée</option>
+                          <option value="Naturel">Naturel</option>
+                          <option value="Artistique">Artistique</option>
+                        </select>
+                      </div>
+                      <div>
+                        <Label htmlFor="gallery-service">Service associé</Label>
+                        <select
+                          id="gallery-service"
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          value={galleryFormData.service_id || ''}
+                          onChange={(e) => setGalleryFormData(prev => ({ ...prev, service_id: e.target.value ? parseInt(e.target.value) : null }))}
+                        >
+                          <option value="">Aucun service</option>
+                          {services.map(service => (
+                            <option key={service.id} value={service.id}>
+                              {service.title}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <Label htmlFor="gallery-featured-image">Image principale</Label>
+                        <Input
+                          id="gallery-featured-image"
+                          value={galleryFormData.featured_image}
+                          onChange={(e) => setGalleryFormData(prev => ({ ...prev, featured_image: e.target.value }))}
+                          placeholder="portfolio-1.jpg"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="gallery-sort-order">Ordre de tri</Label>
+                        <Input
+                          id="gallery-sort-order"
+                          type="number"
+                          value={galleryFormData.sort_order}
+                          onChange={(e) => setGalleryFormData(prev => ({ ...prev, sort_order: parseInt(e.target.value) }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <Label htmlFor="gallery-description">Description</Label>
+                      <Textarea
+                        id="gallery-description"
+                        value={galleryFormData.description}
+                        onChange={(e) => setGalleryFormData(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="Description détaillée de la création..."
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="mt-4">
+                      <Label>Images supplémentaires</Label>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Input
+                          value={currentGalleryImage}
+                          onChange={(e) => setCurrentGalleryImage(e.target.value)}
+                          placeholder="portfolio-2.jpg"
+                          onKeyPress={(e) => e.key === 'Enter' && addGalleryImage()}
+                        />
+                        <Button type="button" onClick={addGalleryImage} size="sm">
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {galleryFormData.images.filter(img => img.trim() !== '').map((image, index) => (
+                          <Badge key={index} variant="secondary" className="flex items-center gap-2">
+                            {image}
+                            <X
+                              className="h-3 w-3 cursor-pointer hover:text-red-500"
+                              onClick={() => removeGalleryImage(index)}
+                            />
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex items-center gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={galleryFormData.is_featured}
+                          onChange={(e) => setGalleryFormData(prev => ({ ...prev, is_featured: e.target.checked }))}
+                          className="rounded border-gray-300"
+                        />
+                        <span className="text-sm">Élément mis en avant</span>
+                      </label>
+                    </div>
+
+                    <div className="flex justify-end gap-4 mt-6">
+                      <Button variant="outline" onClick={cancelGalleryItemEdit}>
+                        <X className="h-4 w-4 mr-2" />
+                        Annuler
+                      </Button>
+                      <Button onClick={saveGalleryItem} className="bg-gradient-luxury text-white">
+                        <Save className="h-4 w-4 mr-2" />
+                        {editingGalleryItem ? 'Mettre à jour' : 'Créer'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  {galleryItems.map((item) => (
+                    <div key={item.id} className="p-4 border rounded-lg bg-white">
+                      <div className="flex justify-between items-start">
+                        <div className="flex gap-4">
+                          <img
+                            src={`/src/assets/${item.featured_image}`}
+                            alt={item.title}
+                            className="w-20 h-20 object-cover rounded-lg"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="text-lg font-medium">{item.title}</h3>
+                              <Badge variant="outline">{item.category}</Badge>
+                              {item.is_featured && <Badge className="bg-gradient-luxury text-white">Mis en avant</Badge>}
+                              <Badge variant="secondary">{item.sort_order}</Badge>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-2 line-clamp-2">{item.description}</p>
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <span>Images: {item.images.length}</span>
+                              <span>•</span>
+                              <span>Créé: {new Date(item.created_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={() => startEditingGalleryItem(item)}
+                            size="sm"
+                            variant="outline"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            onClick={() => deleteGalleryItem(item.id)}
                             size="sm"
                             variant="destructive"
                           >
