@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -11,18 +11,29 @@ import { Card, CardContent } from "./ui/card";
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
+  preselectedService?: string; // Optional preselected service
 }
 
-const BookingModal = ({ isOpen, onClose }: BookingModalProps) => {
+const BookingModal = ({ isOpen, onClose, preselectedService }: BookingModalProps) => {
   const [formData, setFormData] = useState({
     nom: "",
     email: "",
     telephone: "",
-    service: "",
+    service: preselectedService || "",
     date: "",
     heure: "",
     message: ""
   });
+
+  // Update the service when preselectedService prop changes
+  useEffect(() => {
+    if (preselectedService) {
+      setFormData(prev => ({
+        ...prev,
+        service: preselectedService
+      }));
+    }
+  }, [preselectedService]);
 
   const services = [
     { value: "maquillage-mariee", label: "Maquillage Mariée - 150€", duration: "2h" },
@@ -47,7 +58,7 @@ const BookingModal = ({ isOpen, onClose }: BookingModalProps) => {
       nom: "",
       email: "",
       telephone: "",
-      service: "",
+      service: preselectedService || "",
       date: "",
       heure: "",
       message: ""
@@ -64,10 +75,10 @@ const BookingModal = ({ isOpen, onClose }: BookingModalProps) => {
             <Sparkles className="w-6 h-6 text-white" />
           </div>
           <DialogTitle className="font-elegant text-2xl text-foreground">
-            Réserver votre séance beauté
+            {selectedService ? `Réserver - ${selectedService.label.split(' - ')[0]}` : "Réserver votre séance beauté"}
           </DialogTitle>
           <p className="text-muted-foreground">
-            Complétez le formulaire pour réserver votre rendez-vous
+            {selectedService ? `Service sélectionné : ${selectedService.label}` : "Complétez le formulaire pour réserver votre rendez-vous"}
           </p>
         </DialogHeader>
 
