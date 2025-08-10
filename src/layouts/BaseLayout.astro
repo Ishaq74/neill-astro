@@ -1,8 +1,6 @@
 ---
 import "@styles/global.css";
 import { AstroFont } from "astro-font";
-import Header from "@components/Header";
-import Footer from "@components/Footer";
 import ReactProviders from "@components/ReactProviders";
 import { QueryClient } from "@tanstack/react-query";
 import ThemeToggle from "@components/ThemeToggle";
@@ -161,13 +159,11 @@ const {
     <meta name="robots" content={robots} />
     <meta name="theme-color" content="#ffffff" />
   </head>
-  <body class="grid grid-rows-[auto,1fr,auto] min-h-screen">
+  <body class="grid grid-rows-[1fr] min-h-screen">
     <ReactProviders client:load>
-      <Header />
       <main>
         <slot />
       </main>
-      <Footer />
     </ReactProviders>
   </body>
 </html>

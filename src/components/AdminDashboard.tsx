@@ -146,7 +146,7 @@ const AdminDashboard: React.FC = () => {
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
   
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('services');
+  const [activeTab, setActiveTab] = useState('settings'); // Start with settings tab
   
   // Editing states
   const [editingService, setEditingService] = useState<Service | null>(null);
@@ -823,10 +823,23 @@ const AdminDashboard: React.FC = () => {
 
       if (response.ok) {
         await loadSiteSettings();
-        alert('Paramètres mis à jour avec succès !');
+        // Better user feedback
+        const button = document.querySelector('[data-save-settings]') as HTMLButtonElement;
+        if (button) {
+          const originalText = button.innerHTML;
+          button.innerHTML = '<svg class="h-4 w-4 mr-2 inline" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>✅ Sauvegardé avec succès !';
+          button.className = button.className.replace('bg-gradient-luxury', 'bg-green-500');
+          setTimeout(() => {
+            button.innerHTML = originalText;
+            button.className = button.className.replace('bg-green-500', 'bg-gradient-luxury');
+          }, 2000);
+        }
+      } else {
+        alert('Erreur lors de la sauvegarde des paramètres');
       }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
+      alert('Erreur lors de la sauvegarde des paramètres');
     }
   };
 
@@ -942,38 +955,38 @@ const AdminDashboard: React.FC = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
+            <TabsTrigger value="settings" className="flex items-center gap-2 bg-gradient-luxury text-white data-[state=active]:bg-gradient-luxury">
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">Paramètres</span>
+            </TabsTrigger>
             <TabsTrigger value="services" className="flex items-center gap-2">
               <Briefcase className="h-4 w-4" />
-              Services
+              <span className="hidden sm:inline">Services</span>
             </TabsTrigger>
             <TabsTrigger value="formations" className="flex items-center gap-2">
               <GraduationCap className="h-4 w-4" />
-              Formations
+              <span className="hidden sm:inline">Formations</span>
             </TabsTrigger>
             <TabsTrigger value="reservations" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              Réservations
+              <span className="hidden sm:inline">Réservations</span>
             </TabsTrigger>
             <TabsTrigger value="team" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Équipe
+              <span className="hidden sm:inline">Équipe</span>
             </TabsTrigger>
             <TabsTrigger value="testimonials" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
-              Témoignages
+              <span className="hidden sm:inline">Témoignages</span>
             </TabsTrigger>
             <TabsTrigger value="gallery" className="flex items-center gap-2">
               <Image className="h-4 w-4" />
-              Galerie
+              <span className="hidden sm:inline">Galerie</span>
             </TabsTrigger>
             <TabsTrigger value="faqs" className="flex items-center gap-2">
               <HelpCircle className="h-4 w-4" />
-              FAQs
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Paramètres
+              <span className="hidden sm:inline">FAQs</span>
             </TabsTrigger>
           </TabsList>
 
@@ -2168,112 +2181,186 @@ const AdminDashboard: React.FC = () => {
 
           {/* Settings Tab */}
           <TabsContent value="settings">
-            <Card>
-              <CardHeader>
-                <CardTitle>Paramètres du Site</CardTitle>
+            <Card className="border-2 border-primary/20">
+              <CardHeader className="bg-gradient-luxury text-white">
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Paramètres du Site - Configuration Générale
+                </CardTitle>
+                <p className="text-white/90 text-sm">
+                  Configurez ici TOUS les paramètres de votre site. Ces informations seront affichées partout sur le site.
+                </p>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 {siteSettings && (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="settings-site-name">Nom du site</Label>
-                        <Input
-                          id="settings-site-name"
-                          value={settingsFormData.site_name || ''}
-                          onChange={(e) => setSettingsFormData(prev => ({ ...prev, site_name: e.target.value }))}
-                          placeholder="Neill Beauty"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="settings-contact-email">Email de contact</Label>
-                        <Input
-                          id="settings-contact-email"
-                          type="email"
-                          value={settingsFormData.contact_email || ''}
-                          onChange={(e) => setSettingsFormData(prev => ({ ...prev, contact_email: e.target.value }))}
-                          placeholder="contact@neillbeauty.fr"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="settings-contact-phone">Téléphone de contact</Label>
-                        <Input
-                          id="settings-contact-phone"
-                          value={settingsFormData.contact_phone || ''}
-                          onChange={(e) => setSettingsFormData(prev => ({ ...prev, contact_phone: e.target.value }))}
-                          placeholder="+33 6 XX XX XX XX"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="settings-contact-address">Adresse</Label>
-                        <Input
-                          id="settings-contact-address"
-                          value={settingsFormData.contact_address || ''}
-                          onChange={(e) => setSettingsFormData(prev => ({ ...prev, contact_address: e.target.value }))}
-                          placeholder="Paris, France"
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <Label htmlFor="settings-site-description">Description du site</Label>
-                        <Textarea
-                          id="settings-site-description"
-                          value={settingsFormData.site_description || ''}
-                          onChange={(e) => setSettingsFormData(prev => ({ ...prev, site_description: e.target.value }))}
-                          placeholder="Description de votre site"
-                          rows={3}
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <Label htmlFor="settings-business-hours">Horaires d'ouverture</Label>
-                        <Textarea
-                          id="settings-business-hours"
-                          value={settingsFormData.business_hours || ''}
-                          onChange={(e) => setSettingsFormData(prev => ({ ...prev, business_hours: e.target.value }))}
-                          placeholder="Lun-Ven: 9h-18h, Sam: 9h-17h"
-                          rows={2}
-                        />
+                  <div className="space-y-8">
+                    {/* General Information */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-foreground border-b pb-2 mb-4 flex items-center gap-2">
+                        <Building2 className="h-5 w-5 text-primary" />
+                        Informations Générales
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="settings-site-name" className="text-sm font-medium text-foreground">
+                            Nom du site *
+                          </Label>
+                          <Input
+                            id="settings-site-name"
+                            value={settingsFormData.site_name || ''}
+                            onChange={(e) => setSettingsFormData(prev => ({ ...prev, site_name: e.target.value }))}
+                            placeholder="Neill Beauty"
+                            className="mt-1 border-2 border-gray-200 focus:border-primary"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Affiché dans l'en-tête et le footer</p>
+                        </div>
+                        <div>
+                          <Label htmlFor="settings-contact-email" className="text-sm font-medium text-foreground">
+                            Email de contact *
+                          </Label>
+                          <Input
+                            id="settings-contact-email"
+                            type="email"
+                            value={settingsFormData.contact_email || ''}
+                            onChange={(e) => setSettingsFormData(prev => ({ ...prev, contact_email: e.target.value }))}
+                            placeholder="contact@neillbeauty.fr"
+                            className="mt-1 border-2 border-gray-200 focus:border-primary"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Email affiché dans le footer et contact</p>
+                        </div>
+                        <div>
+                          <Label htmlFor="settings-contact-phone" className="text-sm font-medium text-foreground">
+                            Téléphone de contact *
+                          </Label>
+                          <Input
+                            id="settings-contact-phone"
+                            value={settingsFormData.contact_phone || ''}
+                            onChange={(e) => setSettingsFormData(prev => ({ ...prev, contact_phone: e.target.value }))}
+                            placeholder="+33 6 XX XX XX XX"
+                            className="mt-1 border-2 border-gray-200 focus:border-primary"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Numéro affiché dans le footer et contact</p>
+                        </div>
+                        <div>
+                          <Label htmlFor="settings-contact-address" className="text-sm font-medium text-foreground">
+                            Adresse *
+                          </Label>
+                          <Input
+                            id="settings-contact-address"
+                            value={settingsFormData.contact_address || ''}
+                            onChange={(e) => setSettingsFormData(prev => ({ ...prev, contact_address: e.target.value }))}
+                            placeholder="Paris, France"
+                            className="mt-1 border-2 border-gray-200 focus:border-primary"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Adresse affichée dans le footer et contact</p>
+                        </div>
+                        <div className="md:col-span-2">
+                          <Label htmlFor="settings-site-description" className="text-sm font-medium text-foreground">
+                            Description du site *
+                          </Label>
+                          <Textarea
+                            id="settings-site-description"
+                            value={settingsFormData.site_description || ''}
+                            onChange={(e) => setSettingsFormData(prev => ({ ...prev, site_description: e.target.value }))}
+                            placeholder="Votre experte beauté et maquillage professionnel"
+                            rows={3}
+                            className="mt-1 border-2 border-gray-200 focus:border-primary"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Description affichée dans le footer et meta tags</p>
+                        </div>
+                        <div className="md:col-span-2">
+                          <Label htmlFor="settings-business-hours" className="text-sm font-medium text-foreground">
+                            Horaires d'ouverture
+                          </Label>
+                          <Textarea
+                            id="settings-business-hours"
+                            value={settingsFormData.business_hours || ''}
+                            onChange={(e) => setSettingsFormData(prev => ({ ...prev, business_hours: e.target.value }))}
+                            placeholder="Lundi - Vendredi: 9h - 19h&#10;Samedi: 9h - 17h&#10;Dimanche: Sur RDV"
+                            rows={3}
+                            className="mt-1 border-2 border-gray-200 focus:border-primary"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Horaires affichés dans la page contact. Séparez les lignes avec Entrée.
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="border-t pt-6">
-                      <h3 className="text-lg font-medium mb-4">Réseaux sociaux</h3>
+                    {/* Social Media */}
+                    <div className="border-t pt-6 space-y-4">
+                      <h3 className="text-lg font-semibold text-foreground border-b pb-2 mb-4 flex items-center gap-2">
+                        <Instagram className="h-5 w-5 text-primary" />
+                        Réseaux Sociaux
+                      </h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                          <Label htmlFor="settings-instagram">Instagram</Label>
+                          <Label htmlFor="settings-instagram" className="text-sm font-medium text-foreground">
+                            Instagram
+                          </Label>
                           <Input
                             id="settings-instagram"
                             value={settingsFormData.social_instagram || ''}
                             onChange={(e) => setSettingsFormData(prev => ({ ...prev, social_instagram: e.target.value }))}
-                            placeholder="@instagram"
+                            placeholder="@username ou https://instagram.com/username"
+                            className="mt-1 border-2 border-gray-200 focus:border-primary"
                           />
+                          <p className="text-xs text-muted-foreground mt-1">Lien Instagram dans footer et contact</p>
                         </div>
                         <div>
-                          <Label htmlFor="settings-facebook">Facebook</Label>
+                          <Label htmlFor="settings-facebook" className="text-sm font-medium text-foreground">
+                            Facebook
+                          </Label>
                           <Input
                             id="settings-facebook"
                             value={settingsFormData.social_facebook || ''}
                             onChange={(e) => setSettingsFormData(prev => ({ ...prev, social_facebook: e.target.value }))}
-                            placeholder="@facebook"
+                            placeholder="@username ou https://facebook.com/username"
+                            className="mt-1 border-2 border-gray-200 focus:border-primary"
                           />
+                          <p className="text-xs text-muted-foreground mt-1">Lien Facebook dans footer et contact</p>
                         </div>
                         <div>
-                          <Label htmlFor="settings-tiktok">TikTok</Label>
+                          <Label htmlFor="settings-tiktok" className="text-sm font-medium text-foreground">
+                            TikTok
+                          </Label>
                           <Input
                             id="settings-tiktok"
                             value={settingsFormData.social_tiktok || ''}
                             onChange={(e) => setSettingsFormData(prev => ({ ...prev, social_tiktok: e.target.value }))}
-                            placeholder="@tiktok"
+                            placeholder="@username ou https://tiktok.com/@username"
+                            className="mt-1 border-2 border-gray-200 focus:border-primary"
                           />
+                          <p className="text-xs text-muted-foreground mt-1">Lien TikTok (si configuré)</p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex justify-end">
-                      <Button onClick={saveSiteSettings} className="bg-gradient-luxury text-white">
-                        <Save className="h-4 w-4 mr-2" />
-                        Sauvegarder les paramètres
-                      </Button>
+                    {/* Save Button */}
+                    <div className="border-t pt-6">
+                      <div className="flex justify-between items-center">
+                        <div className="text-sm text-muted-foreground">
+                          <p className="font-medium text-foreground mb-1">💡 Important :</p>
+                          <p>Ces paramètres sont synchronisés en temps réel avec votre site web.</p>
+                          <p>Tous les champs marqués d'un * sont obligatoires.</p>
+                        </div>
+                        <Button 
+                          onClick={saveSiteSettings} 
+                          size="lg"
+                          className="bg-gradient-luxury text-white hover-glow px-8 py-3 text-lg font-semibold"
+                          data-save-settings
+                        >
+                          <Save className="h-5 w-5 mr-2" />
+                          💾 Sauvegarder Tous les Paramètres
+                        </Button>
+                      </div>
                     </div>
+                  </div>
+                )}
+
+                {!siteSettings && (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">Chargement des paramètres...</p>
                   </div>
                 )}
               </CardContent>

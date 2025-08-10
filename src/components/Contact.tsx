@@ -4,7 +4,41 @@ import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { MapPin, Phone, Mail, Clock, Instagram, Facebook } from "lucide-react";
 
-const Contact = () => {
+interface SiteSettings {
+  siteName: string;
+  siteDescription: string;
+  contactEmail: string;
+  contactPhone: string;
+  contactAddress: string;
+  socialInstagram?: string;
+  socialFacebook?: string;
+  socialTiktok?: string;
+  businessHours?: string;
+}
+
+interface ContactProps {
+  siteSettings?: SiteSettings;
+}
+
+const Contact = ({ siteSettings }: ContactProps) => {
+  // Parse business hours if available
+  const parseBusinessHours = (hoursString?: string) => {
+    if (!hoursString) {
+      return [
+        { days: "Lundi - Vendredi", hours: "9h - 19h" },
+        { days: "Samedi", hours: "9h - 17h" },
+        { days: "Dimanche", hours: "Sur RDV" }
+      ];
+    }
+    // Simple parsing - can be enhanced later
+    const lines = hoursString.split('\n').filter(line => line.trim());
+    return lines.map(line => {
+      const [days, hours] = line.split(':').map(s => s.trim());
+      return { days: days || line, hours: hours || '' };
+    });
+  };
+
+  const businessHours = parseBusinessHours(siteSettings?.businessHours);
   return (
     <section id="contact" className="py-20 bg-gradient-hero">
       <div className="container mx-auto px-4">
@@ -36,10 +70,9 @@ const Contact = () => {
                   <div className="flex items-start space-x-3">
                     <MapPin className="w-5 h-5 text-primary mt-1" />
                     <div>
-                      <p className="font-medium text-foreground">Studio Artisan Beauty</p>
+                      <p className="font-medium text-foreground">Studio {siteSettings?.siteName || "Artisan Beauty"}</p>
                       <p className="text-sm text-muted-foreground">
-                        123 Rue de la Beauté<br />
-                        75001 Paris, France
+                        {siteSettings?.contactAddress || "123 Rue de la Beauté, 75001 Paris, France"}
                       </p>
                     </div>
                   </div>
@@ -48,7 +81,7 @@ const Contact = () => {
                     <Phone className="w-5 h-5 text-primary" />
                     <div>
                       <p className="text-sm text-muted-foreground">Téléphone</p>
-                      <p className="font-medium text-foreground">+33 1 23 45 67 89</p>
+                      <p className="font-medium text-foreground">{siteSettings?.contactPhone || "+33 1 23 45 67 89"}</p>
                     </div>
                   </div>
                   
@@ -56,7 +89,7 @@ const Contact = () => {
                     <Mail className="w-5 h-5 text-primary" />
                     <div>
                       <p className="text-sm text-muted-foreground">Email</p>
-                      <p className="font-medium text-foreground">contact@artisanbeauty.fr</p>
+                      <p className="font-medium text-foreground">{siteSettings?.contactEmail || "contact@artisanbeauty.fr"}</p>
                     </div>
                   </div>
                 </div>
@@ -72,18 +105,12 @@ const Contact = () => {
                   <div className="flex items-center space-x-3">
                     <Clock className="w-5 h-5 text-primary" />
                     <div className="flex-1">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Lundi - Vendredi</span>
-                        <span className="text-sm font-medium text-foreground">9h - 19h</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Samedi</span>
-                        <span className="text-sm font-medium text-foreground">9h - 17h</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Dimanche</span>
-                        <span className="text-sm font-medium text-foreground">Sur RDV</span>
-                      </div>
+                      {businessHours.map((schedule, index) => (
+                        <div key={index} className="flex justify-between">
+                          <span className="text-sm text-muted-foreground">{schedule.days}</span>
+                          <span className="text-sm font-medium text-foreground">{schedule.hours}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -96,22 +123,39 @@ const Contact = () => {
                   Suivez-moi
                 </h3>
                 <div className="flex space-x-4">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="border-primary text-primary hover:bg-primary hover:text-white"
-                    onClick={() => window.open('https://instagram.com/artisanbeauty', '_blank')}
-                  >
-                    <Instagram className="w-4 h-4" />
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="border-primary text-primary hover:bg-primary hover:text-white"
-                    onClick={() => window.open('https://facebook.com/artisanbeauty', '_blank')}
-                  >
-                    <Facebook className="w-4 h-4" />
-                  </Button>
+                  {siteSettings?.socialInstagram && (
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="border-primary text-primary hover:bg-primary hover:text-white"
+                      onClick={() => window.open(
+                        siteSettings.socialInstagram?.startsWith('http') 
+                          ? siteSettings.socialInstagram 
+                          : `https://instagram.com/${siteSettings.socialInstagram?.replace('@', '')}`, 
+                        '_blank'
+                      )}
+                    >
+                      <Instagram className="w-4 h-4" />
+                    </Button>
+                  )}
+                  {siteSettings?.socialFacebook && (
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="border-primary text-primary hover:bg-primary hover:text-white"
+                      onClick={() => window.open(
+                        siteSettings.socialFacebook?.startsWith('http') 
+                          ? siteSettings.socialFacebook 
+                          : `https://facebook.com/${siteSettings.socialFacebook?.replace('@', '')}`, 
+                        '_blank'
+                      )}
+                    >
+                      <Facebook className="w-4 h-4" />
+                    </Button>
+                  )}
+                  {!siteSettings?.socialInstagram && !siteSettings?.socialFacebook && (
+                    <p className="text-sm text-muted-foreground">Aucun réseau social configuré</p>
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -24,14 +24,20 @@ const formations = await getCollection('formations');
 const teamMembers = await getCollection('team');
 const testimonials = await getCollection('testimonials');
 const faqs = await getCollection('faqs');
-const siteSettings = await getCollection('siteSettings');
+const siteSettingsCollection = await getCollection('siteSettings');
 const gallery = await getCollection('gallery');
+
+// Get the first (and only) site settings entry
+const siteSettings = siteSettingsCollection.length > 0 ? siteSettingsCollection[0].data : null;
 ---
 
-<BaseLayout title="Home" description="Welcome to our homepage">
+<BaseLayout 
+  title={siteSettings?.siteName || "Home"} 
+  description={siteSettings?.siteDescription || "Welcome to our homepage"}
+>
   
 <div class="min-h-screen">
-  <Header />
+  <Header siteSettings={siteSettings} />
 
   <Hero client:load />
 
@@ -72,11 +78,13 @@ const gallery = await getCollection('gallery');
   </AnimatedSection>
 
   <AnimatedSection animation="fade-in" client:visible>
-    <Contact />
+    <Contact siteSettings={siteSettings} />
   </AnimatedSection>
 
   <FloatingCTA client:load />
   <ScrollToTop client:load />
+  
+  <Footer siteSettings={siteSettings} />
 </div>
 
 </BaseLayout>

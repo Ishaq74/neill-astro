@@ -3,7 +3,23 @@ import { Button } from "./ui/button";
 import { Menu, X } from "lucide-react";
 import BookingModal from "./BookingModal";
 
-const Header = () => {
+interface SiteSettings {
+  siteName: string;
+  siteDescription: string;
+  contactEmail: string;
+  contactPhone: string;
+  contactAddress: string;
+  socialInstagram?: string;
+  socialFacebook?: string;
+  socialTiktok?: string;
+  businessHours?: string;
+}
+
+interface HeaderProps {
+  siteSettings?: SiteSettings;
+}
+
+const Header = ({ siteSettings }: HeaderProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
@@ -23,11 +39,13 @@ const Header = () => {
           {/* Logo */}
           <div className="flex items-center space-x-2 sm:space-x-3">
             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-luxury rounded-full flex items-center justify-center">
-              <span className="text-white font-elegant font-bold text-base sm:text-lg">A</span>
+              <span className="text-white font-elegant font-bold text-base sm:text-lg">
+                {siteSettings?.siteName?.charAt(0) || "A"}
+              </span>
             </div>
             <div>
               <h1 className="font-elegant text-xl sm:text-2xl font-bold text-foreground">
-                Artisan Beauty
+                {siteSettings?.siteName || "Artisan Beauty"}
               </h1>
             </div>
           </div>
