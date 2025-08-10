@@ -31,14 +31,14 @@ const Header = ({ siteSettings }: HeaderProps) => {
     }
   }, []);
 
-  // Navigation items with dynamic hrefs based on current page
+  // Navigation items with consistent absolute URLs
   const getNavItems = () => {
     const isHomePage = currentPath === '/' || currentPath === '';
     
     if (isHomePage) {
       // On homepage, use hash links to sections
       return [
-        { label: "Accueil", href: "#" },
+        { label: "Accueil", href: "/" },
         { label: "Services", href: "#services" },
         { label: "Formations", href: "#formations" },
         { label: "Galerie", href: "#galerie" },
@@ -46,7 +46,7 @@ const Header = ({ siteSettings }: HeaderProps) => {
         { label: "Contact", href: "#contact" },
       ];
     } else {
-      // On other pages, link to dedicated pages or back to homepage sections
+      // On other pages, use absolute URLs
       return [
         { label: "Accueil", href: "/" },
         { label: "Services", href: "/services" },

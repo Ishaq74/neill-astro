@@ -64,11 +64,11 @@ const Footer = ({ siteSettings }: FooterProps) => {
           <div>
             <h4 className="font-semibold text-lg mb-4">Services</h4>
             <ul className="space-y-2 text-sm text-background/70">
-              <li><a href="/services/maquillage-professionnel" className="hover:text-primary transition-colors">Maquillage Mariée</a></li>
-              <li><a href="/services/formations-beaute" className="hover:text-primary transition-colors">Maquillage Événementiel</a></li>
+              <li><a href="/services" className="hover:text-primary transition-colors">Maquillage Mariée</a></li>
+              <li><a href="/services" className="hover:text-primary transition-colors">Maquillage Événementiel</a></li>
               <li><a href="/formations" className="hover:text-primary transition-colors">Formations Beauté</a></li>
-              <li><a href="/services/consultations-vip" className="hover:text-primary transition-colors">Consultations VIP</a></li>
-              <li><a href="/services/relooking-complet" className="hover:text-primary transition-colors">Relooking Complet</a></li>
+              <li><a href="/services" className="hover:text-primary transition-colors">Consultations VIP</a></li>
+              <li><a href="/services" className="hover:text-primary transition-colors">Relooking Complet</a></li>
             </ul>
           </div>
 
@@ -108,9 +108,9 @@ const Footer = ({ siteSettings }: FooterProps) => {
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-background/70">
             <p>&copy; 2024 {siteSettings?.siteName || "Artisan Beauty"}. Tous droits réservés.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="#" className="hover:text-primary transition-colors">Mentions légales</a>
-              <a href="#" className="hover:text-primary transition-colors">Politique de confidentialité</a>
-              <a href="#" className="hover:text-primary transition-colors">CGV</a>
+              <a href="/legal" className="hover:text-primary transition-colors">Mentions légales</a>
+              <a href="/privacy" className="hover:text-primary transition-colors">Politique de confidentialité</a>
+              <a href="/terms" className="hover:text-primary transition-colors">CGV</a>
               <a href="/admin" className="hover:text-primary transition-colors text-xs">Admin</a>
             </div>
           </div>

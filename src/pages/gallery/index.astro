@@ -51,33 +51,37 @@ const galleryByCategory = gallery.reduce((acc: any, item) => {
         </h2>
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {gallery.filter(item => item.data.isFeatured).slice(0, 3).map((item) => (
-            <Card class="group overflow-hidden bg-gradient-card border-border/50 hover-glow">
+            <Card class="group overflow-hidden bg-gradient-card border-border/50 hover-glow transform hover:scale-105 transition-all duration-500">
               <CardContent class="p-0">
                 <a href={`/gallery/${item.id}`}>
                   <div class="relative overflow-hidden">
-                    <img
-                      src={`/src/assets/${item.data.featuredImage}`}
-                      alt={item.data.title}
-                      class="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
+                    <div class="w-full h-80 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                      <div class="text-center">
+                        <div class="p-6 bg-gradient-luxury rounded-full text-white text-4xl mb-4 transform group-hover:scale-110 transition-transform duration-500">
+                          🎨
+                        </div>
+                        <div class="text-foreground font-medium">Portfolio</div>
+                      </div>
+                    </div>
                     <div class="absolute top-4 left-4">
-                      <span class="px-3 py-1 bg-primary/90 text-primary-foreground rounded-full text-sm font-medium">
+                      <span class="px-4 py-2 bg-primary/90 backdrop-blur-sm text-primary-foreground rounded-full text-sm font-medium shadow-lg">
                         {item.data.category}
                       </span>
                     </div>
                     <div class="absolute top-4 right-4">
-                      <span class="px-3 py-1 bg-gradient-luxury text-white rounded-full text-sm font-medium">
+                      <span class="px-4 py-2 bg-gradient-luxury text-white rounded-full text-sm font-medium shadow-lg">
                         ⭐ Coup de cœur
                       </span>
                     </div>
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
-                        <h3 class="font-elegant text-xl font-semibold mb-2">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                      <div class="absolute bottom-0 left-0 right-0 p-8 text-white">
+                        <h3 class="font-elegant text-2xl font-semibold mb-3">
                           {item.data.title}
                         </h3>
-                        <p class="text-sm text-white/90 line-clamp-2">
+                        <p class="text-base text-white/90 leading-relaxed">
                           {item.data.description}
                         </p>
+                        <div class="mt-4 text-sm opacity-75">Cliquez pour voir plus →</div>
                       </div>
                     </div>
                   </div>
@@ -104,30 +108,34 @@ const galleryByCategory = gallery.reduce((acc: any, item) => {
           
           <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {(items as any[]).map((item) => (
-              <Card class="group overflow-hidden bg-gradient-card border-border/50 hover-glow">
+              <Card class="group overflow-hidden bg-gradient-card border-border/50 hover-glow transform hover:scale-105 transition-all duration-300">
                 <CardContent class="p-0">
                   <a href={`/gallery/${item.id}`}>
                     <div class="relative overflow-hidden">
-                      <img
-                        src={`/src/assets/${item.data.featuredImage}`}
-                        alt={item.data.title}
-                        class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-700"
-                      />
+                      <div class="w-full h-64 bg-gradient-to-br from-secondary/20 to-muted/40 flex items-center justify-center">
+                        <div class="text-center">
+                          <div class="p-4 bg-gradient-luxury rounded-xl text-white text-2xl mb-2 transform group-hover:scale-110 transition-transform duration-300">
+                            ✨
+                          </div>
+                          <div class="text-xs text-muted-foreground font-medium">{item.data.category}</div>
+                        </div>
+                      </div>
                       {item.data.isFeatured && (
                         <div class="absolute top-3 right-3">
-                          <span class="w-6 h-6 bg-gradient-luxury text-white rounded-full flex items-center justify-center text-xs">
+                          <span class="w-8 h-8 bg-gradient-luxury text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg">
                             ⭐
                           </span>
                         </div>
                       )}
-                      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div class="absolute bottom-0 left-0 right-0 p-4 text-white">
-                          <h3 class="font-elegant text-lg font-semibold mb-1">
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
+                          <h3 class="font-elegant text-lg font-semibold mb-2">
                             {item.data.title}
                           </h3>
-                          <p class="text-sm text-white/90 line-clamp-2">
+                          <p class="text-sm text-white/90 leading-relaxed line-clamp-3">
                             {item.data.description}
                           </p>
+                          <div class="mt-3 text-xs opacity-75">Voir le détail →</div>
                         </div>
                       </div>
                     </div>
