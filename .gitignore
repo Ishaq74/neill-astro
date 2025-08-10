@@ -1,6 +1,6 @@
 # build output
 dist/
-.vercel/
+# Note: .vercel/output/ is needed for Vercel deployment, so not ignoring .vercel/
 # generated types
 .astro/
 
