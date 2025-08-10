@@ -109,4 +109,113 @@ const testimonials = defineCollection({
   }
 });
 
-export const collections = { services, team, testimonials };
+const formations = defineCollection({
+  schema: z.object({
+    title: z.string(),
+    subtitle: z.string(),
+    description: z.string(),
+    level: z.string(),
+    duration: z.string(),
+    participants: z.string(),
+    price: z.string(),
+    features: z.array(z.string()),
+    imagePath: z.string().optional(),
+    badge: z.string(),
+    sortOrder: z.number()
+  }),
+  loader: async () => {
+    const db = new Database('./data/formations.sqlite');
+    const rows = db.prepare(`
+      SELECT slug, title, subtitle, description, level, duration, participants, price, 
+             features, image_path, badge, sort_order 
+      FROM formations ORDER BY sort_order
+    `).all();
+    db.close();
+
+    return rows.map((row) => {
+      return {
+        id: row.slug,
+        title: row.title,
+        subtitle: row.subtitle,
+        description: row.description,
+        level: row.level,
+        duration: row.duration,
+        participants: row.participants,
+        price: row.price,
+        features: row.features ? JSON.parse(row.features) : [],
+        imagePath: row.image_path || '',
+        badge: row.badge,
+        sortOrder: row.sort_order,
+      };
+    });
+  }
+});
+
+const faqs = defineCollection({
+  schema: z.object({
+    question: z.string(),
+    answer: z.string(),
+    category: z.string(),
+    sortOrder: z.number(),
+    isActive: z.boolean()
+  }),
+  loader: async () => {
+    const db = new Database('./data/faqs.sqlite');
+    const rows = db.prepare(`
+      SELECT id, question, answer, category, sort_order, is_active 
+      FROM faqs WHERE is_active = 1 ORDER BY sort_order
+    `).all();
+    db.close();
+
+    return rows.map((row) => {
+      return {
+        id: row.id.toString(),
+        question: row.question,
+        answer: row.answer,
+        category: row.category,
+        sortOrder: row.sort_order,
+        isActive: row.is_active === 1,
+      };
+    });
+  }
+});
+
+const siteSettings = defineCollection({
+  schema: z.object({
+    siteName: z.string(),
+    siteDescription: z.string(),
+    contactEmail: z.string(),
+    contactPhone: z.string(),
+    contactAddress: z.string(),
+    socialInstagram: z.string().optional(),
+    socialFacebook: z.string().optional(),
+    socialTiktok: z.string().optional(),
+    businessHours: z.string().optional()
+  }),
+  loader: async () => {
+    const db = new Database('./data/site_settings.sqlite');
+    const rows = db.prepare(`
+      SELECT id, site_name, site_description, contact_email, contact_phone, contact_address,
+             social_instagram, social_facebook, social_tiktok, business_hours 
+      FROM site_settings LIMIT 1
+    `).all();
+    db.close();
+
+    return rows.map((row) => {
+      return {
+        id: row.id.toString(),
+        siteName: row.site_name,
+        siteDescription: row.site_description,
+        contactEmail: row.contact_email,
+        contactPhone: row.contact_phone,
+        contactAddress: row.contact_address,
+        socialInstagram: row.social_instagram || '',
+        socialFacebook: row.social_facebook || '',
+        socialTiktok: row.social_tiktok || '',
+        businessHours: row.business_hours || '',
+      };
+    });
+  }
+});
+
+export const collections = { services, team, testimonials, formations, faqs, siteSettings };

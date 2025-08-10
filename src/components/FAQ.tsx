@@ -2,7 +2,20 @@ import { useState } from "react";
 import { Card, CardContent } from "./ui/card";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
-const FAQ = () => {
+interface FAQProps {
+  faqs?: Array<{
+    id: string;
+    data: {
+      question: string;
+      answer: string;
+      category: string;
+      sortOrder: number;
+      isActive: boolean;
+    };
+  }>;
+}
+
+const FAQ = ({ faqs }: FAQProps) => {
   const [openItems, setOpenItems] = useState<number[]>([0]);
 
   const toggleItem = (index: number) => {
@@ -13,7 +26,26 @@ const FAQ = () => {
     );
   };
 
-  const faqData = [
+  // Transform FAQ data from collections or use fallback
+  const faqData = faqs && faqs.length > 0 ? 
+    // Group FAQs by category
+    Object.entries(
+      faqs.reduce((acc, faq) => {
+        const category = faq.data.category;
+        if (!acc[category]) acc[category] = [];
+        acc[category].push({
+          question: faq.data.question,
+          answer: faq.data.answer
+        });
+        return acc;
+      }, {} as Record<string, { question: string; answer: string }[]>)
+    ).map(([category, questions]) => ({
+      category: category.charAt(0).toUpperCase() + category.slice(1),
+      questions
+    }))
+    :
+    // Fallback data
+    [
     {
       category: "Services",
       questions: [
