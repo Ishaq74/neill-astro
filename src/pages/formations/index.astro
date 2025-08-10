@@ -1,0 +1,173 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from "@layouts/BaseLayout.astro";
+import Header from "@components/Header";
+import Footer from "@components/Footer";
+import FloatingCTA from "@components/FloatingCTA";
+import ScrollToTop from "@components/ScrollToTop";
+import { Card, CardContent } from "@components/ui/card";
+import { Button } from "@components/ui/button";
+
+// Fetch data from collections
+const formations = await getCollection('formations');
+const siteSettingsCollection = await getCollection('siteSettings');
+const siteSettings = siteSettingsCollection.length > 0 ? siteSettingsCollection[0].data : null;
+
+const badgeColors = {
+  'Populaire': 'bg-primary text-white',
+  'Nouveau': 'bg-accent text-white',
+  'Certifiante': 'bg-gradient-to-r from-amber-400 to-yellow-500 text-white',
+  'Spécialisé': 'bg-secondary text-foreground'
+};
+---
+
+<BaseLayout title="Nos Formations - Neill Beauty" description="Découvrez toutes nos formations en maquillage et techniques de beauté professionnelle">
+  <div class="min-h-screen bg-gradient-to-br from-background to-muted">
+    <Header siteSettings={siteSettings} />
+    
+    <!-- Hero Section -->
+    <section class="pt-24 pb-16">
+      <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto text-center">
+          <h1 class="font-elegant text-4xl lg:text-6xl font-bold text-foreground mb-6">
+            Nos Formations
+          </h1>
+          <p class="text-xl text-muted-foreground mb-8 leading-relaxed">
+            Apprenez les techniques professionnelles du maquillage avec des formations certifiantes et personnalisées
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Formations Grid -->
+    <section class="py-16">
+      <div class="container mx-auto px-4">
+        <div class="grid lg:grid-cols-2 xl:grid-cols-3 gap-8">
+          {formations.map((formation) => (
+            <Card class="group overflow-hidden bg-gradient-card border-border/50 hover-glow h-full flex flex-col">
+              <CardContent class="p-0 flex-1 flex flex-col">
+                <div class="relative overflow-hidden">
+                  <img
+                    src={`/src/assets/${formation.data.imagePath}`}
+                    alt={formation.data.title}
+                    class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  {formation.data.badge && (
+                    <div class="absolute top-4 left-4">
+                      <span class={`inline-block px-3 py-1 text-sm font-medium rounded-full ${badgeColors[formation.data.badge] || 'bg-secondary text-foreground'}`}>
+                        {formation.data.badge}
+                      </span>
+                    </div>
+                  )}
+                  <div class="absolute top-4 right-4">
+                    <div class="bg-white/90 px-3 py-1 rounded-full">
+                      <span class="font-elegant text-lg font-bold text-primary">{formation.data.price}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="p-6 flex-1 flex flex-col">
+                  <h3 class="font-elegant text-xl font-bold text-foreground mb-2">
+                    {formation.data.title}
+                  </h3>
+                  <p class="text-primary font-medium mb-3">
+                    {formation.data.subtitle}
+                  </p>
+                  <p class="text-muted-foreground mb-4 leading-relaxed text-sm flex-1">
+                    {formation.data.description}
+                  </p>
+                  
+                  <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
+                    <div class="text-center">
+                      <div class="text-xs text-muted-foreground">Durée</div>
+                      <div class="font-semibold text-foreground">{formation.data.duration}</div>
+                    </div>
+                    <div class="text-center">
+                      <div class="text-xs text-muted-foreground">Niveau</div>
+                      <div class="font-semibold text-foreground">{formation.data.level}</div>
+                    </div>
+                  </div>
+                  
+                  <Button class="w-full bg-gradient-luxury hover-glow mt-auto" asChild>
+                    <a href={`/formations/${formation.id}`}>
+                      Découvrir cette formation
+                    </a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="py-16">
+      <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+          <h2 class="font-elegant text-3xl font-bold text-foreground mb-8 text-center">
+            Pourquoi choisir nos formations ?
+          </h2>
+          
+          <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div class="bg-gradient-card border border-border/50 rounded-xl p-6 text-center luxury-shadow">
+              <div class="w-12 h-12 bg-gradient-luxury rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-white text-xl">🏆</span>
+              </div>
+              <h3 class="font-semibold text-foreground mb-2">Formatrice Certifiée</h3>
+              <p class="text-sm text-muted-foreground">15 ans d'expérience professionnelle</p>
+            </div>
+            
+            <div class="bg-gradient-card border border-border/50 rounded-xl p-6 text-center luxury-shadow">
+              <div class="w-12 h-12 bg-gradient-luxury rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-white text-xl">👥</span>
+              </div>
+              <h3 class="font-semibold text-foreground mb-2">Groupes Réduits</h3>
+              <p class="text-sm text-muted-foreground">Maximum 6 personnes par formation</p>
+            </div>
+            
+            <div class="bg-gradient-card border border-border/50 rounded-xl p-6 text-center luxury-shadow">
+              <div class="w-12 h-12 bg-gradient-luxury rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-white text-xl">📚</span>
+              </div>
+              <h3 class="font-semibold text-foreground mb-2">Support Complet</h3>
+              <p class="text-sm text-muted-foreground">Manuel et suivi inclus</p>
+            </div>
+            
+            <div class="bg-gradient-card border border-border/50 rounded-xl p-6 text-center luxury-shadow">
+              <div class="w-12 h-12 bg-gradient-luxury rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-white text-xl">✨</span>
+              </div>
+              <h3 class="font-semibold text-foreground mb-2">Matériel Fourni</h3>
+              <p class="text-sm text-muted-foreground">Produits professionnels haut de gamme</p>
+            </div>
+          </div>
+
+          <!-- CTA Section -->
+          <div class="text-center">
+            <div class="bg-gradient-card border border-border/50 rounded-2xl p-8 luxury-shadow">
+              <h3 class="font-elegant text-2xl font-bold text-foreground mb-4">
+                Prête à vous former ?
+              </h3>
+              <p class="text-muted-foreground mb-8">
+                Contactez-moi pour discuter de vos objectifs et choisir la formation qui vous convient.
+              </p>
+              
+              <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button class="bg-gradient-luxury hover-glow" asChild>
+                  <a href="/#contact">Demander des informations</a>
+                </Button>
+                <Button variant="outline" asChild>
+                  <a href="/">← Retour à l'accueil</a>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <FloatingCTA client:load />
+    <ScrollToTop client:load />
+    <Footer siteSettings={siteSettings} />
+  </div>
+</BaseLayout>

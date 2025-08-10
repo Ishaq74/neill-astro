@@ -64,11 +64,11 @@ const Footer = ({ siteSettings }: FooterProps) => {
           <div>
             <h4 className="font-semibold text-lg mb-4">Services</h4>
             <ul className="space-y-2 text-sm text-background/70">
-              <li><a href="#" className="hover:text-primary transition-colors">Maquillage Mariée</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Maquillage Événementiel</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Formations Beauté</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Consultations VIP</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Relooking Complet</a></li>
+              <li><a href="/services/maquillage-professionnel" className="hover:text-primary transition-colors">Maquillage Mariée</a></li>
+              <li><a href="/services/formations-beaute" className="hover:text-primary transition-colors">Maquillage Événementiel</a></li>
+              <li><a href="/formations" className="hover:text-primary transition-colors">Formations Beauté</a></li>
+              <li><a href="/services/consultations-vip" className="hover:text-primary transition-colors">Consultations VIP</a></li>
+              <li><a href="/services/relooking-complet" className="hover:text-primary transition-colors">Relooking Complet</a></li>
             </ul>
           </div>
 
@@ -76,11 +76,11 @@ const Footer = ({ siteSettings }: FooterProps) => {
           <div>
             <h4 className="font-semibold text-lg mb-4">Navigation</h4>
             <ul className="space-y-2 text-sm text-background/70">
-              <li><a href="#" className="hover:text-primary transition-colors">Accueil</a></li>
-              <li><a href="#services" className="hover:text-primary transition-colors">Services</a></li>
-              <li><a href="#formations" className="hover:text-primary transition-colors">Formations</a></li>
-              <li><a href="#galerie" className="hover:text-primary transition-colors">Galerie</a></li>
-              <li><a href="#contact" className="hover:text-primary transition-colors">Contact</a></li>
+              <li><a href="/" className="hover:text-primary transition-colors">Accueil</a></li>
+              <li><a href="/services" className="hover:text-primary transition-colors">Services</a></li>
+              <li><a href="/formations" className="hover:text-primary transition-colors">Formations</a></li>
+              <li><a href="/gallery" className="hover:text-primary transition-colors">Galerie</a></li>
+              <li><a href="/#contact" className="hover:text-primary transition-colors">Contact</a></li>
             </ul>
           </div>
 

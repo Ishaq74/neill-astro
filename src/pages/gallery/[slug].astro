@@ -1,6 +1,8 @@
 ---
 import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from "@layouts/BaseLayout.astro";
+import Header from "@components/Header";
+import Footer from "@components/Footer";
 import { Button } from "@components/ui/button";
 import { Card, CardContent } from "@components/ui/card";
 import { ArrowLeft, Heart, Share2, Eye } from "lucide-react";
@@ -20,6 +22,10 @@ if (!slug) {
 
 const galleryItem = await getEntry('gallery', slug);
 const services = await getCollection('services');
+
+// Get site settings
+const siteSettingsCollection = await getCollection('siteSettings');
+const siteSettings = siteSettingsCollection.length > 0 ? siteSettingsCollection[0].data : null;
 
 if (!galleryItem) {
   return Astro.redirect('/404');
@@ -41,33 +47,35 @@ const relatedItems = allGallery
 >
   <div class="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
     <!-- Navigation Header -->
-    <div class="container mx-auto px-4 py-8">
-      <div class="flex items-center justify-between">
-        <Button 
-          variant="ghost" 
-          class="flex items-center gap-2 text-primary hover:text-primary/80"
-          onclick="history.back()"
-        >
-          <ArrowLeft class="w-4 h-4" />
-          Retour à la galerie
-        </Button>
-        
-        <div class="flex items-center gap-4">
-          <Button variant="outline" size="sm" class="flex items-center gap-2" data-favorite>
-            <Heart class="w-4 h-4" />
-            Favoris
-          </Button>
-          <Button variant="outline" size="sm" class="flex items-center gap-2" data-share>
-            <Share2 class="w-4 h-4" />
-            Partager
-          </Button>
-        </div>
-      </div>
+    <div class="bg-background/90 backdrop-blur-md border-b border-border">
+      <Header siteSettings={siteSettings} />
     </div>
-
     <!-- Main Content -->
-    <div class="container mx-auto px-4 pb-20">
+    <div class="container mx-auto px-4 pb-20 pt-8">
       <div class="grid lg:grid-cols-2 gap-12 items-start">
+        
+        <!-- Navigation Actions -->
+        <div class="lg:col-span-2 flex items-center justify-between mb-8">
+          <Button 
+            variant="ghost" 
+            class="flex items-center gap-2 text-primary hover:text-primary/80"
+            onclick="history.back()"
+          >
+            <ArrowLeft class="w-4 h-4" />
+            Retour à la galerie
+          </Button>
+          
+          <div class="flex items-center gap-4">
+            <Button variant="outline" size="sm" class="flex items-center gap-2" data-favorite>
+              <Heart class="w-4 h-4" />
+              Favoris
+            </Button>
+            <Button variant="outline" size="sm" class="flex items-center gap-2" data-share>
+              <Share2 class="w-4 h-4" />
+              Partager
+            </Button>
+          </div>
+        </div>
         
         <!-- Image Gallery -->
         <div class="space-y-4">
@@ -205,6 +213,8 @@ const relatedItems = allGallery
         </div>
       )}
     </div>
+    
+    <Footer siteSettings={siteSettings} />
   </div>
 </BaseLayout>
 

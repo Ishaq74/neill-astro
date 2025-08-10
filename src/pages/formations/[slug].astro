@@ -16,6 +16,10 @@ export async function getStaticPaths() {
 
 const { formation } = Astro.props;
 
+// Get site settings
+const siteSettingsCollection = await getCollection('siteSettings');
+const siteSettings = siteSettingsCollection.length > 0 ? siteSettingsCollection[0].data : null;
+
 const badgeColors = {
   'Populaire': 'bg-primary text-white',
   'Nouveau': 'bg-accent text-white',
@@ -26,7 +30,7 @@ const badgeColors = {
 
 <BaseLayout title={`${formation.data.title} - Neill Beauty`} description={formation.data.description}>
   <div class="min-h-screen bg-gradient-to-br from-background to-muted">
-    <Header />
+    <Header siteSettings={siteSettings} />
     
     {/* Hero Section */}
     <section class="pt-24 pb-16">
@@ -186,5 +190,6 @@ const badgeColors = {
 
     <FloatingCTA client:load />
     <ScrollToTop client:load />
+    <Footer siteSettings={siteSettings} />
   </div>
 </BaseLayout>

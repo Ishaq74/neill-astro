@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Menu, X } from "lucide-react";
 import BookingModal from "./BookingModal";
@@ -22,15 +22,43 @@ interface HeaderProps {
 const Header = ({ siteSettings }: HeaderProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [currentPath, setCurrentPath] = useState('');
 
-  const navItems = [
-    { label: "Accueil", href: "#" },
-    { label: "Services", href: "#services" },
-    { label: "Formations", href: "#formations" },
-    { label: "Galerie", href: "#galerie" },
-    { label: "Équipe", href: "#equipe" },
-    { label: "Contact", href: "#contact" },
-  ];
+  // Get current path on client side
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setCurrentPath(window.location.pathname);
+    }
+  }, []);
+
+  // Navigation items with dynamic hrefs based on current page
+  const getNavItems = () => {
+    const isHomePage = currentPath === '/' || currentPath === '';
+    
+    if (isHomePage) {
+      // On homepage, use hash links to sections
+      return [
+        { label: "Accueil", href: "#" },
+        { label: "Services", href: "#services" },
+        { label: "Formations", href: "#formations" },
+        { label: "Galerie", href: "#galerie" },
+        { label: "Équipe", href: "#equipe" },
+        { label: "Contact", href: "#contact" },
+      ];
+    } else {
+      // On other pages, link to dedicated pages or back to homepage sections
+      return [
+        { label: "Accueil", href: "/" },
+        { label: "Services", href: "/services" },
+        { label: "Formations", href: "/formations" },
+        { label: "Galerie", href: "/gallery" },
+        { label: "Équipe", href: "/#equipe" },
+        { label: "Contact", href: "/#contact" },
+      ];
+    }
+  };
+
+  const navItems = getNavItems();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-[60] bg-background/90 backdrop-blur-md border-b border-border">

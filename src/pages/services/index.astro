@@ -1,0 +1,129 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from "@layouts/BaseLayout.astro";
+import Header from "@components/Header";
+import Footer from "@components/Footer";
+import FloatingCTA from "@components/FloatingCTA";
+import ScrollToTop from "@components/ScrollToTop";
+import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
+import { Button } from "@components/ui/button";
+
+// Fetch data from collections
+const services = await getCollection('services');
+const siteSettingsCollection = await getCollection('siteSettings');
+const siteSettings = siteSettingsCollection.length > 0 ? siteSettingsCollection[0].data : null;
+
+const iconMap = {
+  'Palette': '🎨',
+  'GraduationCap': '🎓', 
+  'Crown': '👑',
+  'Sparkles': '✨'
+};
+---
+
+<BaseLayout title="Nos Services - Neill Beauty" description="Découvrez tous nos services de maquillage professionnel et formations beauté">
+  <div class="min-h-screen bg-gradient-to-br from-background to-muted">
+    <Header siteSettings={siteSettings} />
+    
+    <!-- Hero Section -->
+    <section class="pt-24 pb-16">
+      <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto text-center">
+          <h1 class="font-elegant text-4xl lg:text-6xl font-bold text-foreground mb-6">
+            Nos Services
+          </h1>
+          <p class="text-xl text-muted-foreground mb-8 leading-relaxed">
+            Découvrez notre gamme complète de services de maquillage professionnel et formations beauté personnalisées
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services Grid -->
+    <section class="py-16">
+      <div class="container mx-auto px-4">
+        <div class="grid lg:grid-cols-2 gap-8">
+          {services.map((service) => (
+            <Card class="group overflow-hidden bg-gradient-card border-border/50 hover-glow">
+              <CardContent class="p-0">
+                <div class="relative overflow-hidden">
+                  <img
+                    src={`/src/assets/${service.data.imagePath}`}
+                    alt={service.data.title}
+                    class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div class="absolute top-4 left-4">
+                    <div class="p-3 bg-gradient-luxury rounded-xl text-white text-2xl">
+                      {iconMap[service.data.iconName] || '🎨'}
+                    </div>
+                  </div>
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
+                      <div class="font-elegant text-2xl font-bold text-primary mb-2">
+                        {service.data.price}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="p-6">
+                  <h3 class="font-elegant text-2xl font-bold text-foreground mb-3">
+                    {service.data.title}
+                  </h3>
+                  <p class="text-muted-foreground mb-6 leading-relaxed">
+                    {service.data.description}
+                  </p>
+                  
+                  <div class="space-y-3 mb-6">
+                    {service.data.features.slice(0, 3).map((feature: string) => (
+                      <div class="flex items-center space-x-3">
+                        <div class="flex-shrink-0 w-5 h-5 bg-gradient-luxury rounded-full flex items-center justify-center">
+                          <span class="text-white text-xs font-bold">✓</span>
+                        </div>
+                        <span class="text-sm text-muted-foreground">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <Button class="w-full bg-gradient-luxury hover-glow" asChild>
+                    <a href={`/services/${service.id}`}>
+                      Découvrir ce service
+                    </a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16">
+      <div class="container mx-auto px-4">
+        <div class="max-w-2xl mx-auto text-center">
+          <div class="bg-gradient-card border border-border/50 rounded-2xl p-8 luxury-shadow">
+            <h2 class="font-elegant text-3xl font-bold text-foreground mb-4">
+              Besoin d'un conseil personnalisé ?
+            </h2>
+            <p class="text-muted-foreground mb-8">
+              Contactez-moi pour discuter de vos besoins et choisir le service qui vous convient le mieux.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button class="bg-gradient-luxury hover-glow" asChild>
+                <a href="/#contact">Me contacter</a>
+              </Button>
+              <Button variant="outline" asChild>
+                <a href="/">← Retour à l'accueil</a>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <FloatingCTA client:load />
+    <ScrollToTop client:load />
+    <Footer siteSettings={siteSettings} />
+  </div>
+</BaseLayout>
