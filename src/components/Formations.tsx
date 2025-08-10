@@ -172,7 +172,12 @@ const Formations = ({ formations }: FormationsProps) => {
                         </span>
                         <span className="text-sm text-muted-foreground ml-1">/ personne</span>
                       </div>
-                      <Button className="bg-gradient-luxury text-white group-hover:shadow-lg transition-all">
+                      <Button className="bg-gradient-luxury text-white group-hover:shadow-lg transition-all"
+                        onClick={() => {
+                          // Navigate to individual formation page
+                          const slug = formations[index]?.id || `formation-${formation.id}`;
+                          window.location.href = `/formations/${slug}`;
+                        }}>
                         Réserver
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>

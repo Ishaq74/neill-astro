@@ -1,0 +1,119 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from "@layouts/BaseLayout.astro";
+import Header from "@components/Header";
+import Footer from "@components/Footer";
+import FloatingCTA from "@components/FloatingCTA";
+import ScrollToTop from "@components/ScrollToTop";
+
+export async function getStaticPaths() {
+  const services = await getCollection('services');
+  return services.map((service) => ({
+    params: { slug: service.id },
+    props: { service },
+  }));
+}
+
+const { service } = Astro.props;
+
+const iconMap = {
+  'Palette': '🎨',
+  'GraduationCap': '🎓', 
+  'Crown': '👑',
+  'Sparkles': '✨'
+};
+---
+
+<BaseLayout title={`${service.data.title} - Neill Beauty`} description={service.data.description}>
+  <div class="min-h-screen bg-gradient-to-br from-background to-muted">
+    <Header />
+    
+    {/* Hero Section */}
+    <section class="pt-24 pb-16">
+      <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto text-center">
+          <div class="flex justify-center mb-6">
+            <div class="p-4 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-2xl text-white text-4xl">
+              {iconMap[service.data.iconName] || '🎨'}
+            </div>
+          </div>
+          
+          <h1 class="font-elegant text-4xl lg:text-6xl font-bold text-foreground mb-6">
+            {service.data.title}
+          </h1>
+          
+          <p class="text-xl text-muted-foreground mb-8 leading-relaxed">
+            {service.data.description}
+          </p>
+          
+          <div class="flex flex-wrap justify-center gap-4 mb-12">
+            <div class="flex items-center bg-gradient-card border border-border/50 rounded-lg px-4 py-2">
+              <span class="font-elegant text-2xl font-bold text-primary mr-2">
+                {service.data.price}
+              </span>
+              <span class="text-muted-foreground">/ prestation</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* Service Details */}
+    <section class="py-16">
+      <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+          <div class="bg-gradient-card border border-border/50 rounded-2xl p-8 luxury-shadow">
+            <h2 class="font-elegant text-3xl font-bold text-foreground mb-8 text-center">
+              Ce qui est inclus
+            </h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+              {service.data.features.map((feature, index) => (
+                <div key={index} class="flex items-start space-x-3">
+                  <div class="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full flex items-center justify-center mt-0.5">
+                    <span class="text-white text-sm font-bold">✓</span>
+                  </div>
+                  <span class="text-muted-foreground">{feature}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* CTA Section */}
+    <section class="py-16">
+      <div class="container mx-auto px-4">
+        <div class="max-w-2xl mx-auto text-center">
+          <div class="bg-gradient-card border border-border/50 rounded-2xl p-8 luxury-shadow">
+            <h2 class="font-elegant text-3xl font-bold text-foreground mb-4">
+              Réservez votre prestation
+            </h2>
+            <p class="text-muted-foreground mb-8">
+              Contactez-moi pour discuter de vos besoins et programmer votre rendez-vous.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+              <a 
+                href="#contact"
+                class="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-lg font-medium hover:shadow-lg transition-all duration-300"
+              >
+                Prendre rendez-vous
+              </a>
+              <a 
+                href="/"
+                class="inline-flex items-center justify-center px-8 py-4 border border-border text-foreground rounded-lg font-medium hover:bg-muted transition-all duration-300"
+              >
+                ← Retour à l'accueil
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <FloatingCTA client:load />
+    <ScrollToTop client:load />
+  </div>
+</BaseLayout>
