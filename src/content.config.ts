@@ -218,4 +218,40 @@ const siteSettings = defineCollection({
   }
 });
 
-export const collections = { services, team, testimonials, formations, faqs, siteSettings };
+const gallery = defineCollection({
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    category: z.string(),
+    serviceId: z.number().optional(),
+    images: z.array(z.string()),
+    featuredImage: z.string(),
+    isFeatured: z.boolean(),
+    sortOrder: z.number()
+  }),
+  loader: async () => {
+    const db = new Database('./data/gallery.sqlite');
+    const rows = db.prepare(`
+      SELECT slug, title, description, category, service_id, images, featured_image, 
+             is_featured, sort_order
+      FROM gallery ORDER BY sort_order
+    `).all();
+    db.close();
+
+    return rows.map((row) => {
+      return {
+        id: row.slug,
+        title: row.title,
+        description: row.description,
+        category: row.category,
+        serviceId: row.service_id,
+        images: row.images ? JSON.parse(row.images) : [],
+        featuredImage: row.featured_image,
+        isFeatured: row.is_featured === 1,
+        sortOrder: row.sort_order,
+      };
+    });
+  }
+});
+
+export const collections = { services, team, testimonials, formations, faqs, siteSettings, gallery };
