@@ -22,7 +22,8 @@ import {
   Building2,
   Star,
   Calendar,
-  Image
+  Image,
+  Instagram
 } from 'lucide-react';
 
 interface Service {
