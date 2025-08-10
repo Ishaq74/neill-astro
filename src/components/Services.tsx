@@ -4,41 +4,45 @@ import { Palette, GraduationCap, Crown, Sparkles } from "lucide-react";
 import serviceImage1 from "@assets/service-makeup.jpg";
 import serviceImage2 from "@assets/service-formation.jpg";
 
-const Services = () => {
-  const services = [
-    {
-      icon: <Palette className="w-8 h-8" />,
-      title: "Maquillage Professionnel",
-      description: "Maquillage personnalisé pour tous vos événements spéciaux",
-      image: serviceImage1,
-      features: ["Mariages", "Événements", "Shooting photo", "Soirées"],
-      price: "À partir de 80€"
-    },
-    {
-      icon: <GraduationCap className="w-8 h-8" />,
-      title: "Formations Beauté",
-      description: "Cours privés et ateliers pour maîtriser l'art du maquillage",
-      image: serviceImage2,
-      features: ["Cours individuels", "Ateliers groupe", "Techniques avancées", "Certification"],
-      price: "À partir de 120€"
-    },
-    {
-      icon: <Crown className="w-8 h-8" />,
-      title: "Consultations VIP",
-      description: "Service premium avec analyse personnalisée complète",
-      image: serviceImage2,
-      features: ["Analyse morphologique", "Sélection produits", "Routine beauté", "Suivi personnalisé"],
-      price: "À partir de 200€"
-    },
-    {
-      icon: <Sparkles className="w-8 h-8" />,
-      title: "Relooking Complet",
-      description: "Transformation complète pour révéler votre potentiel",
-      image: serviceImage1,
-      features: ["Conseil style", "Maquillage", "Coiffure", "Shooting photo"],
-      price: "À partir de 350€"
-    }
-  ];
+// Icon mapping for dynamic icons
+const iconMap = {
+  Palette: <Palette className="w-8 h-8" />,
+  GraduationCap: <GraduationCap className="w-8 h-8" />,
+  Crown: <Crown className="w-8 h-8" />,
+  Sparkles: <Sparkles className="w-8 h-8" />
+};
+
+// Image mapping for now (since we store paths as strings but need to import)
+const imageMap = {
+  '/src/assets/service-makeup.jpg': serviceImage1,
+  '/src/assets/service-formation.jpg': serviceImage2
+};
+
+interface ServicesProps {
+  services: Array<{
+    id: string;
+    data: {
+      title: string;
+      description: string;
+      iconName: string;
+      imagePath: string;
+      features: string[];
+      price: string;
+      sortOrder: number;
+    };
+  }>;
+}
+
+const Services = ({ services }: ServicesProps) => {
+  // Transform the data from collections to match expected structure
+  const servicesData = services.map(service => ({
+    icon: iconMap[service.data.iconName as keyof typeof iconMap] || iconMap.Palette,
+    title: service.data.title,
+    description: service.data.description,
+    image: imageMap[service.data.imagePath as keyof typeof imageMap] || serviceImage1,
+    features: service.data.features,
+    price: service.data.price
+  }));
 
   return (
     <section id="services" className="py-20 bg-gradient-to-br from-background to-muted">
@@ -58,7 +62,7 @@ const Services = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {services.map((service, index) => (
+          {servicesData.map((service, index) => (
             <Card key={index} className="card-elegant group overflow-hidden">
               <CardContent className="p-0">
                 {service.image && (
