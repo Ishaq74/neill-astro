@@ -25,6 +25,7 @@ const teamMembers = await getCollection('team');
 const testimonials = await getCollection('testimonials');
 const faqs = await getCollection('faqs');
 const siteSettings = await getCollection('siteSettings');
+const gallery = await getCollection('gallery');
 ---
 
 <BaseLayout title="Home" description="Welcome to our homepage">
@@ -47,7 +48,7 @@ const siteSettings = await getCollection('siteSettings');
   </AnimatedSection>
 
   <AnimatedSection animation="slide-left" delay={100} client:visible>
-    <Gallery client:load />
+    <Gallery gallery={gallery} client:load />
   </AnimatedSection>
 
   <AnimatedSection animation="scale-in" client:visible>

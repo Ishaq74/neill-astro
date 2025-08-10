@@ -2,65 +2,35 @@ import { useState } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { X, ZoomIn } from "lucide-react";
-import portfolio1 from "@assets/portfolio-1.jpg";
-import portfolio2 from "@assets/portfolio-2.jpg";
-import portfolio3 from "@assets/portfolio-3.jpg";
-import portfolio4 from "@assets/portfolio-4.jpg";
 
-const Gallery = () => {
+interface GalleryItem {
+  id: string;
+  data: {
+    title: string;
+    description: string;
+    category: string;
+    serviceId?: number;
+    images: string[];
+    featuredImage: string;
+    isFeatured: boolean;
+    sortOrder: number;
+  };
+}
+
+interface GalleryProps {
+  gallery: GalleryItem[];
+}
+
+const Gallery = ({ gallery }: GalleryProps) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const portfolioItems = [
-    {
-      id: 1,
-      image: portfolio1,
-      category: "Mariage",
-      title: "Look Mariée Romantique",
-      description: "Maquillage délicat et intemporel pour un jour unique"
-    },
-    {
-      id: 2,
-      image: portfolio2,
-      category: "Soirée",
-      title: "Glamour Sophistiqué",
-      description: "Look dramatique pour événements prestigieux"
-    },
-    {
-      id: 3,
-      image: portfolio3,
-      category: "Naturel",
-      title: "Beauté Naturelle",
-      description: "Sublimation de la beauté authentique"
-    },
-    {
-      id: 4,
-      image: portfolio4,
-      category: "Artistique",
-      title: "Création Artistique",
-      description: "Maquillage d'art et expression créative"
-    },
-    {
-      id: 5,
-      image: portfolio1,
-      category: "Mariage",
-      title: "Élégance Classique",
-      description: "Style intemporel et raffiné"
-    },
-    {
-      id: 6,
-      image: portfolio2,
-      category: "Soirée",
-      title: "Rouge Passion",
-      description: "Look audacieux et séducteur"
-    }
-  ];
-
-  const categories = ["Tous", "Mariage", "Soirée", "Naturel", "Artistique"];
+  // Get all unique categories from gallery data
+  const categories = ["Tous", ...Array.from(new Set(gallery.map(item => item.data.category)))];
   const [activeCategory, setActiveCategory] = useState("Tous");
 
   const filteredItems = activeCategory === "Tous" 
-    ? portfolioItems 
-    : portfolioItems.filter(item => item.category === activeCategory);
+    ? gallery 
+    : gallery.filter(item => item.data.category === activeCategory);
 
   return (
     <section id="gallery" className="py-20">
@@ -107,33 +77,48 @@ const Gallery = () => {
             <Card 
               key={item.id} 
               className="group overflow-hidden bg-gradient-card border-border/50 hover-glow cursor-pointer animate-fade-in"
-              onClick={() => setSelectedImage(item.image.src)}
             >
               <CardContent className="p-0">
-                <div className="relative overflow-hidden">
-                  <img
-                    src={item.image.src}
-                    alt={item.title}
-                    className="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                      <span className="inline-block px-3 py-1 bg-primary/80 rounded-full text-xs font-medium mb-2">
-                        {item.category}
-                      </span>
-                      <h3 className="font-elegant text-xl font-semibold mb-2">
-                        {item.title}
-                      </h3>
-                      <p className="text-sm text-white/90">
-                        {item.description}
-                      </p>
-                    </div>
-                    <div className="absolute top-4 right-4">
-                      <div className="p-2 bg-white/20 backdrop-blur-sm rounded-full">
-                        <ZoomIn className="w-5 h-5 text-white" />
+                <a href={`/gallery/${item.id}`} className="block">
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={`/src/assets/${item.data.featuredImage}`}
+                      alt={item.data.title}
+                      className="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                        <span className="inline-block px-3 py-1 bg-primary/80 rounded-full text-xs font-medium mb-2">
+                          {item.data.category}
+                        </span>
+                        <h3 className="font-elegant text-xl font-semibold mb-2">
+                          {item.data.title}
+                        </h3>
+                        <p className="text-sm text-white/90 line-clamp-2">
+                          {item.data.description}
+                        </p>
+                      </div>
+                      <div className="absolute top-4 right-4">
+                        <div className="p-2 bg-white/20 backdrop-blur-sm rounded-full">
+                          <ZoomIn className="w-5 h-5 text-white" />
+                        </div>
                       </div>
                     </div>
                   </div>
+                </a>
+                
+                {/* Quick view button */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                  <button
+                    className="pointer-events-auto px-4 py-2 bg-white/90 backdrop-blur-sm rounded-lg text-gray-900 font-medium hover:bg-white transition-colors"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setSelectedImage(`/src/assets/${item.data.featuredImage}`);
+                    }}
+                  >
+                    Aperçu rapide
+                  </button>
                 </div>
               </CardContent>
             </Card>
