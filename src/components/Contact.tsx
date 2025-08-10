@@ -2,7 +2,8 @@ import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
-import { MapPin, Phone, Mail, Clock, Instagram, Facebook } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, Instagram, Facebook, Send, Check } from "lucide-react";
+import { useState } from "react";
 
 interface SiteSettings {
   siteName: string;
@@ -21,6 +22,60 @@ interface ContactProps {
 }
 
 const Contact = ({ siteSettings }: ContactProps) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setIsSubmitted(true);
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: ''
+        });
+      } else {
+        setError(result.error || 'Une erreur est survenue');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setError('Une erreur est survenue lors de l\'envoi du message');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   // Parse business hours if available
   const parseBusinessHours = (hoursString?: string) => {
     if (!hoursString) {
@@ -168,73 +223,127 @@ const Contact = ({ siteSettings }: ContactProps) => {
                 <h3 className="font-elegant text-2xl font-semibold text-foreground mb-6">
                   Demande de Rendez-vous
                 </h3>
-                <form className="space-y-6" onSubmit={(e) => {
-                  e.preventDefault();
-                  alert("Votre demande a été envoyée ! Nous vous contacterons sous 24h.");
-                }}>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">
-                        Prénom *
-                      </label>
-                      <Input placeholder="Votre prénom" className="border-border/50" required />
+                <form className="space-y-6" onSubmit={handleSubmit}>
+                  {isSubmitted ? (
+                    <div className="text-center py-8">
+                      <Check className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold text-foreground mb-2">Message envoyé !</h3>
+                      <p className="text-muted-foreground">
+                        Nous avons bien reçu votre message et vous répondrons dans les plus brefs délais.
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="mt-4"
+                        onClick={() => setIsSubmitted(false)}
+                      >
+                        Envoyer un autre message
+                      </Button>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">
-                        Nom *
-                      </label>
-                      <Input placeholder="Votre nom" className="border-border/50" required />
-                    </div>
-                  </div>
-                  
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">
-                        Email *
-                      </label>
-                      <Input type="email" placeholder="votre@email.com" className="border-border/50" required />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">
-                        Téléphone
-                      </label>
-                      <Input placeholder="Votre numéro" className="border-border/50" />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Service souhaité *
-                    </label>
-                    <select className="w-full px-3 py-2 border border-border/50 rounded-md bg-background text-foreground" required>
-                      <option value="">Sélectionnez un service</option>
-                      <option value="maquillage">Maquillage professionnel</option>
-                      <option value="formation">Formation beauté</option>
-                      <option value="consultation">Consultation VIP</option>
-                      <option value="relooking">Relooking complet</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Date souhaitée
-                    </label>
-                    <Input type="date" className="border-border/50" min={new Date().toISOString().split('T')[0]} />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Message
-                    </label>
-                    <Textarea 
-                      placeholder="Décrivez vos attentes, l'occasion, vos préférences..."
-                      className="border-border/50 min-h-[120px]"
-                    />
-                  </div>
-                  
-                  <Button type="submit" size="lg" className="w-full bg-gradient-luxury text-white hover-glow luxury-shadow">
-                    Envoyer ma demande
-                  </Button>
+                  ) : (
+                    <>
+                      {error && (
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
+                          <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
+                        </div>
+                      )}
+                      
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-sm font-medium text-foreground mb-2">
+                            Prénom *
+                          </label>
+                          <Input 
+                            name="name"
+                            value={formData.name}
+                            onChange={handleInputChange}
+                            placeholder="Votre prénom" 
+                            className="border-border/50" 
+                            required 
+                            disabled={isSubmitting}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-foreground mb-2">
+                            Email *
+                          </label>
+                          <Input 
+                            type="email" 
+                            name="email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            placeholder="votre@email.com" 
+                            className="border-border/50" 
+                            required 
+                            disabled={isSubmitting}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-sm font-medium text-foreground mb-2">
+                            Téléphone
+                          </label>
+                          <Input 
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                            placeholder="Votre numéro" 
+                            className="border-border/50" 
+                            disabled={isSubmitting}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-foreground mb-2">
+                            Sujet
+                          </label>
+                          <Input 
+                            name="subject"
+                            value={formData.subject}
+                            onChange={handleInputChange}
+                            placeholder="Sujet de votre message" 
+                            className="border-border/50" 
+                            disabled={isSubmitting}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">
+                          Message *
+                        </label>
+                        <Textarea 
+                          name="message"
+                          value={formData.message}
+                          onChange={handleInputChange}
+                          placeholder="Décrivez vos attentes, l'occasion, vos préférences..."
+                          className="border-border/50 min-h-[120px]"
+                          required
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      
+                      <Button 
+                        type="submit" 
+                        size="lg" 
+                        className="w-full bg-gradient-luxury text-white hover-glow luxury-shadow"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                            Envoi en cours...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4 mr-2" />
+                            Envoyer mon message
+                          </>
+                        )}
+                      </Button>
+                    </>
+                  )}
                 </form>
               </CardContent>
             </Card>

@@ -49,7 +49,9 @@ export const PUT: APIRoute = async ({ request }) => {
     const stmt = db.prepare(`
       UPDATE site_settings 
       SET site_name = ?, site_description = ?, contact_email = ?, contact_phone = ?, contact_address = ?,
-          social_instagram = ?, social_facebook = ?, social_tiktok = ?, business_hours = ?, updated_at = CURRENT_TIMESTAMP
+          social_instagram = ?, social_facebook = ?, social_tiktok = ?, business_hours = ?,
+          smtp_host = ?, smtp_port = ?, smtp_username = ?, smtp_password = ?, smtp_secure = ?, smtp_from_name = ?,
+          updated_at = CURRENT_TIMESTAMP
       WHERE id = 1
     `);
     
@@ -62,7 +64,13 @@ export const PUT: APIRoute = async ({ request }) => {
       data.social_instagram,
       data.social_facebook,
       data.social_tiktok,
-      data.business_hours
+      data.business_hours,
+      data.smtp_host,
+      data.smtp_port,
+      data.smtp_username,
+      data.smtp_password,
+      data.smtp_secure,
+      data.smtp_from_name
     );
     
     db.close();
