@@ -20,7 +20,8 @@ import {
   GraduationCap,
   HelpCircle,
   Building2,
-  Star
+  Star,
+  Calendar
 } from 'lucide-react';
 
 interface Service {
@@ -89,6 +90,21 @@ interface FAQ {
   is_active: number;
 }
 
+interface Reservation {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  service_type: string;
+  service_name: string;
+  preferred_date: string;
+  preferred_time: string;
+  message: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
 interface SiteSettings {
   id: number;
   site_name: string;
@@ -109,6 +125,7 @@ const AdminDashboard: React.FC = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
   
   const [loading, setLoading] = useState(true);
@@ -120,6 +137,7 @@ const AdminDashboard: React.FC = () => {
   const [editingTeamMember, setEditingTeamMember] = useState<TeamMember | null>(null);
   const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
   const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
+  const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
   
   const [isCreatingService, setIsCreatingService] = useState(false);
   const [isCreatingFormation, setIsCreatingFormation] = useState(false);
@@ -169,6 +187,7 @@ const AdminDashboard: React.FC = () => {
         loadTeamMembers(),
         loadTestimonials(),
         loadFaqs(),
+        loadReservations(),
         loadSiteSettings()
       ]);
     } catch (error) {
@@ -235,6 +254,18 @@ const AdminDashboard: React.FC = () => {
       }
     } catch (error) {
       console.error('Erreur lors du chargement des FAQs:', error);
+    }
+  };
+
+  const loadReservations = async () => {
+    try {
+      const response = await fetch('/api/admin/reservations');
+      if (response.ok) {
+        const data = await response.json();
+        setReservations(data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des réservations:', error);
     }
   };
 
@@ -683,6 +714,42 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  // Reservation management operations
+  const updateReservationStatus = async (id: number, newStatus: string) => {
+    try {
+      const reservation = reservations.find(r => r.id === id);
+      if (!reservation) return;
+
+      const response = await fetch('/api/admin/reservations', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...reservation, status: newStatus })
+      });
+
+      if (response.ok) {
+        await loadReservations();
+      }
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour:', error);
+    }
+  };
+
+  const deleteReservation = async (id: number) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/reservations?id=${id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        await loadReservations();
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+    }
+  };
+
   // Site Settings operations
   const saveSiteSettings = async () => {
     try {
@@ -738,7 +805,7 @@ const AdminDashboard: React.FC = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="services" className="flex items-center gap-2">
               <Briefcase className="h-4 w-4" />
               Services
@@ -746,6 +813,10 @@ const AdminDashboard: React.FC = () => {
             <TabsTrigger value="formations" className="flex items-center gap-2">
               <GraduationCap className="h-4 w-4" />
               Formations
+            </TabsTrigger>
+            <TabsTrigger value="reservations" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Réservations
             </TabsTrigger>
             <TabsTrigger value="team" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
@@ -1170,6 +1241,91 @@ const AdminDashboard: React.FC = () => {
                     </div>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Reservations Tab */}
+          <TabsContent value="reservations">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gestion des Réservations</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {reservations.map((reservation) => (
+                    <div key={reservation.id} className="p-4 border rounded-lg bg-white">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="text-lg font-medium">{reservation.name}</h3>
+                            <Badge 
+                              variant={
+                                reservation.status === 'confirmed' ? 'default' :
+                                reservation.status === 'pending' ? 'secondary' :
+                                reservation.status === 'completed' ? 'outline' : 'destructive'
+                              }
+                            >
+                              {reservation.status}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4 text-sm mb-3">
+                            <div>
+                              <span className="text-gray-500">Email:</span>
+                              <span className="ml-2">{reservation.email}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Téléphone:</span>
+                              <span className="ml-2">{reservation.phone || 'Non fourni'}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Service:</span>
+                              <span className="ml-2">{reservation.service_name || reservation.service_type}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Date souhaitée:</span>
+                              <span className="ml-2">{reservation.preferred_date} à {reservation.preferred_time}</span>
+                            </div>
+                          </div>
+                          {reservation.message && (
+                            <div className="text-sm">
+                              <span className="text-gray-500">Message:</span>
+                              <p className="text-gray-600 mt-1 italic">"{reservation.message}"</p>
+                            </div>
+                          )}
+                          <div className="text-xs text-gray-400 mt-2">
+                            Créée le: {new Date(reservation.created_at).toLocaleDateString('fr-FR')}
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <select
+                            value={reservation.status}
+                            onChange={(e) => updateReservationStatus(reservation.id, e.target.value)}
+                            className="text-sm px-2 py-1 rounded border"
+                          >
+                            <option value="pending">En attente</option>
+                            <option value="confirmed">Confirmée</option>
+                            <option value="completed">Terminée</option>
+                            <option value="cancelled">Annulée</option>
+                          </select>
+                          <Button
+                            onClick={() => deleteReservation(reservation.id)}
+                            size="sm"
+                            variant="destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {reservations.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    Aucune réservation pour le moment
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
