@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import * as React from "react";
-import { format, addDays, isSameDay, isAfter, isBefore } from "date-fns";
+import { format, addDays, isAfter, isBefore } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ArrowLeft, Calendar, Clock, User, CreditCard, CheckCircle, Star } from "lucide-react";
 import { Button } from "@components/ui/button";

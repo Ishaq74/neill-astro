@@ -66,8 +66,14 @@ neill-astro/
 │   │   └── gallery/        # Pages galerie
 │   ├── styles/             # Styles Tailwind
 │   └── assets/             # Images et médias
+├── scripts/                # Scripts utilitaires
+│   └── backup-database.sh  # Script sauvegarde SQLite
 ├── public/                 # Fichiers statiques
-└── scripts/                # Scripts utilitaires
+├── .env.example           # Template variables environnement
+├── vercel.json            # Configuration déploiement sécurisé
+├── SECURITY.md            # Guide de sécurité
+├── ROADMAP.md            # Feuille de route développement
+└── SYNTHESIS.md          # Analyse détaillée du projet
 ```
 
 ## 🛠️ Technologies Utilisées
@@ -126,6 +132,25 @@ Toutes les commandes sont exécutées depuis la racine du projet :
   - Gestion des témoignages et FAQ
   - Suivi des réservations
   - Configuration du site
+
+## 🔐 Sécurité & Sauvegarde
+
+- **Configuration sécurisée** : Headers de sécurité via `vercel.json`
+- **Variables d'environnement** : Template disponible dans `.env.example`
+- **Sauvegarde automatique** : Script `./scripts/backup-database.sh`
+- **Guide sécurité** : Documentation complète dans `SECURITY.md`
+
+### Commandes de sécurité
+```bash
+# Vérifier les vulnérabilités
+npm audit
+
+# Créer une sauvegarde des données
+./scripts/backup-database.sh
+
+# Copier le template d'environnement
+cp .env.example .env
+```
 
 ## 🌐 Déploiement
 
