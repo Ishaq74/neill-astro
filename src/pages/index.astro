@@ -1,4 +1,5 @@
 ---
+import { getCollection } from 'astro:content';
 import Header from "@components/Header";
 import Hero from "@components/Hero";
 import Services from "@components/Services";
@@ -16,6 +17,11 @@ import FloatingCTA from "@components/FloatingCTA";
 import ScrollToTop from "@components/ScrollToTop";
 import AnimatedSection from "@components/AnimatedSection";
 import BaseLayout from "@layouts/BaseLayout.astro";
+
+// Fetch data from collections
+const services = await getCollection('services');
+const teamMembers = await getCollection('team');
+const testimonials = await getCollection('testimonials');
 ---
 
 <BaseLayout title="Home" description="Welcome to our homepage">
@@ -26,7 +32,7 @@ import BaseLayout from "@layouts/BaseLayout.astro";
   <Hero client:load />
 
   <AnimatedSection animation="fade-in" client:visible>
-    <Services />
+    <Services services={services} />
   </AnimatedSection>
 
   <AnimatedSection animation="slide-up" delay={100} client:visible>
@@ -46,11 +52,11 @@ import BaseLayout from "@layouts/BaseLayout.astro";
   </AnimatedSection>
 
   <AnimatedSection animation="slide-right" delay={150} client:visible>
-    <Team />
+    <Team teamMembers={teamMembers} />
   </AnimatedSection>
 
   <AnimatedSection animation="fade-in" delay={100} client:visible>
-    <Testimonials />
+    <Testimonials testimonials={testimonials} />
   </AnimatedSection>
 
   <AnimatedSection animation="slide-up" delay={200} client:visible>
