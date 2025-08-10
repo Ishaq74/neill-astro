@@ -23,7 +23,7 @@ const services = defineCollection({
         description: row.description,
         iconName: row.icon_name,
         imagePath: row.image_path,
-        features: JSON.parse(row.features),
+        features: row.features ? JSON.parse(row.features) : [],
         price: row.price,
         sortOrder: row.sort_order,
       };
@@ -39,12 +39,12 @@ const team = defineCollection({
     imagePath: z.string(),
     experience: z.string(),
     description: z.string(),
-    certifications: z.array(z.string()),
-    achievements: z.array(z.string()),
+    certifications: z.array(z.string()).optional(),
+    achievements: z.array(z.string()).optional(),
     social: z.object({
-      instagram: z.string(),
-      linkedin: z.string(),
-      email: z.string()
+      instagram: z.string().optional(),
+      linkedin: z.string().optional(),
+      email: z.string().optional()
     }),
     sortOrder: z.number()
   }),
@@ -66,12 +66,12 @@ const team = defineCollection({
         imagePath: row.image_path,
         experience: row.experience,
         description: row.description,
-        certifications: JSON.parse(row.certifications),
-        achievements: JSON.parse(row.achievements),
+        certifications: row.certifications ? JSON.parse(row.certifications) : [],
+        achievements: row.achievements ? JSON.parse(row.achievements) : [],
         social: {
-          instagram: row.social_instagram,
-          linkedin: row.social_linkedin,
-          email: row.social_email
+          instagram: row.social_instagram || '',
+          linkedin: row.social_linkedin || '',
+          email: row.social_email || ''
         },
         sortOrder: row.sort_order,
       };
