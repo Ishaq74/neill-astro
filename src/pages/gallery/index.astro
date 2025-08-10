@@ -1,0 +1,172 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from "@layouts/BaseLayout.astro";
+import Header from "@components/Header";
+import Footer from "@components/Footer";
+import FloatingCTA from "@components/FloatingCTA";
+import ScrollToTop from "@components/ScrollToTop";
+import { Card, CardContent } from "@components/ui/card";
+import { Button } from "@components/ui/button";
+import { Badge } from "@components/ui/badge";
+
+// Fetch data from collections
+const gallery = await getCollection('gallery');
+const siteSettingsCollection = await getCollection('siteSettings');
+const siteSettings = siteSettingsCollection.length > 0 ? siteSettingsCollection[0].data : null;
+
+// Group gallery items by category
+const galleryByCategory = gallery.reduce((acc: any, item) => {
+  const category = item.data.category || 'Autres';
+  if (!acc[category]) {
+    acc[category] = [];
+  }
+  acc[category].push(item);
+  return acc;
+}, {});
+---
+
+<BaseLayout title="Notre Galerie - Neill Beauty" description="Découvrez nos créations et réalisations en maquillage professionnel">
+  <div class="min-h-screen bg-gradient-to-br from-background to-muted">
+    <Header siteSettings={siteSettings} />
+    
+    <!-- Hero Section -->
+    <section class="pt-24 pb-16">
+      <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto text-center">
+          <h1 class="font-elegant text-4xl lg:text-6xl font-bold text-foreground mb-6">
+            Notre Galerie
+          </h1>
+          <p class="text-xl text-muted-foreground mb-8 leading-relaxed">
+            Découvrez nos créations et réalisations en maquillage professionnel. Chaque création raconte une histoire unique.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Items -->
+    <section class="py-8">
+      <div class="container mx-auto px-4">
+        <h2 class="font-elegant text-3xl font-bold text-foreground mb-8 text-center">
+          Coups de cœur
+        </h2>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          {gallery.filter(item => item.data.isFeatured).slice(0, 3).map((item) => (
+            <Card class="group overflow-hidden bg-gradient-card border-border/50 hover-glow">
+              <CardContent class="p-0">
+                <a href={`/gallery/${item.id}`}>
+                  <div class="relative overflow-hidden">
+                    <img
+                      src={`/src/assets/${item.data.featuredImage}`}
+                      alt={item.data.title}
+                      class="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                    <div class="absolute top-4 left-4">
+                      <span class="px-3 py-1 bg-primary/90 text-primary-foreground rounded-full text-sm font-medium">
+                        {item.data.category}
+                      </span>
+                    </div>
+                    <div class="absolute top-4 right-4">
+                      <span class="px-3 py-1 bg-gradient-luxury text-white rounded-full text-sm font-medium">
+                        ⭐ Coup de cœur
+                      </span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
+                        <h3 class="font-elegant text-xl font-semibold mb-2">
+                          {item.data.title}
+                        </h3>
+                        <p class="text-sm text-white/90 line-clamp-2">
+                          {item.data.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Gallery by Category -->
+    {Object.entries(galleryByCategory).map(([categoryName, items]) => (
+      <section class="py-8">
+        <div class="container mx-auto px-4">
+          <div class="flex items-center justify-between mb-8">
+            <h2 class="font-elegant text-2xl font-bold text-foreground">
+              {categoryName}
+            </h2>
+            <Badge variant="secondary" class="px-3 py-1">
+              {(items as any[]).length} {(items as any[]).length > 1 ? 'créations' : 'création'}
+            </Badge>
+          </div>
+          
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {(items as any[]).map((item) => (
+              <Card class="group overflow-hidden bg-gradient-card border-border/50 hover-glow">
+                <CardContent class="p-0">
+                  <a href={`/gallery/${item.id}`}>
+                    <div class="relative overflow-hidden">
+                      <img
+                        src={`/src/assets/${item.data.featuredImage}`}
+                        alt={item.data.title}
+                        class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
+                      {item.data.isFeatured && (
+                        <div class="absolute top-3 right-3">
+                          <span class="w-6 h-6 bg-gradient-luxury text-white rounded-full flex items-center justify-center text-xs">
+                            ⭐
+                          </span>
+                        </div>
+                      )}
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div class="absolute bottom-0 left-0 right-0 p-4 text-white">
+                          <h3 class="font-elegant text-lg font-semibold mb-1">
+                            {item.data.title}
+                          </h3>
+                          <p class="text-sm text-white/90 line-clamp-2">
+                            {item.data.description}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    ))}
+
+    <!-- CTA Section -->
+    <section class="py-16">
+      <div class="container mx-auto px-4">
+        <div class="max-w-2xl mx-auto text-center">
+          <div class="bg-gradient-card border border-border/50 rounded-2xl p-8 luxury-shadow">
+            <h2 class="font-elegant text-3xl font-bold text-foreground mb-4">
+              Vous aimez nos créations ?
+            </h2>
+            <p class="text-muted-foreground mb-8">
+              Contactez-moi pour créer votre look unique et personnalisé. Chaque maquillage est une œuvre d'art.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button class="bg-gradient-luxury hover-glow" asChild>
+                <a href="/#contact">Réserver une prestation</a>
+              </Button>
+              <Button variant="outline" asChild>
+                <a href="/">← Retour à l'accueil</a>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <FloatingCTA client:load />
+    <ScrollToTop client:load />
+    <Footer siteSettings={siteSettings} />
+  </div>
+</BaseLayout>

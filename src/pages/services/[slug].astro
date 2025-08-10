@@ -16,6 +16,10 @@ export async function getStaticPaths() {
 
 const { service } = Astro.props;
 
+// Get site settings
+const siteSettingsCollection = await getCollection('siteSettings');
+const siteSettings = siteSettingsCollection.length > 0 ? siteSettingsCollection[0].data : null;
+
 const iconMap = {
   'Palette': '🎨',
   'GraduationCap': '🎓', 
@@ -26,7 +30,7 @@ const iconMap = {
 
 <BaseLayout title={`${service.data.title} - Neill Beauty`} description={service.data.description}>
   <div class="min-h-screen bg-gradient-to-br from-background to-muted">
-    <Header />
+    <Header siteSettings={siteSettings} />
     
     {/* Hero Section */}
     <section class="pt-24 pb-16">
@@ -115,5 +119,6 @@ const iconMap = {
 
     <FloatingCTA client:load />
     <ScrollToTop client:load />
+    <Footer siteSettings={siteSettings} />
   </div>
 </BaseLayout>
