@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import * as React from "react";
 import { format, addDays, isSameDay, isAfter, isBefore } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ArrowLeft, Calendar, Clock, User, CreditCard, CheckCircle, Star } from "lucide-react";
@@ -62,35 +63,53 @@ const ReservationPage = () => {
     }
   ];
 
-  // Simulation des disponibilités (en réalité, cela viendrait d'une API)
-  const unavailableDates = [
-    new Date(2024, 11, 25), // Noël
-    new Date(2024, 11, 26),
-    new Date(2025, 0, 1),   // Jour de l'an
-    addDays(new Date(), 2), // Dans 2 jours (exemple)
-    addDays(new Date(), 5), // Dans 5 jours (exemple)
-  ];
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
-  const availableTimeSlots = [
-    "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-    "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"
-  ];
-
-  const bookedSlots = {
-    [format(addDays(new Date(), 1), "yyyy-MM-dd")]: ["09:00", "14:00"],
-    [format(addDays(new Date(), 3), "yyyy-MM-dd")]: ["10:00", "15:00", "16:00"],
+  // Fetch available slots when date changes
+  const fetchAvailableSlots = async (date: Date) => {
+    setIsLoadingSlots(true);
+    try {
+      const dateStr = format(date, 'yyyy-MM-dd');
+      const response = await fetch(`/api/available-slots?date=${dateStr}&service_type=${selectedService?.id || ''}`);
+      
+      if (response.ok) {
+        const slots = await response.json();
+        setAvailableSlots(slots.map((slot: any) => slot.start_time));
+      } else {
+        console.error('Erreur lors de la récupération des créneaux');
+        setAvailableSlots([]);
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+      setAvailableSlots([]);
+    } finally {
+      setIsLoadingSlots(false);
+    }
   };
 
+  // Update available slots when date changes
+  React.useEffect(() => {
+    if (selectedDate) {
+      fetchAvailableSlots(selectedDate);
+    } else {
+      setAvailableSlots([]);
+    }
+  }, [selectedDate, selectedService]);
+
   const getAvailableSlots = (date: Date) => {
-    const dateKey = format(date, "yyyy-MM-dd");
-    const booked = bookedSlots[dateKey] || [];
-    return availableTimeSlots.filter(slot => !booked.includes(slot));
+    return availableSlots;
   };
 
   const isDateUnavailable = (date: Date) => {
-    return unavailableDates.some(unavailableDate => 
-      isSameDay(date, unavailableDate)
-    ) || isBefore(date, new Date()) || isAfter(date, addDays(new Date(), 60));
+    // Don't allow booking in the past
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Don't allow booking too far in advance (60 days)
+    const maxDate = addDays(new Date(), 60);
+    
+    return isBefore(date, today) || isAfter(date, maxDate);
   };
 
   const handleServiceSelect = (service: any) => {
@@ -108,15 +127,39 @@ const ReservationPage = () => {
     setCurrentStep(4);
   };
 
-  const handleFinalConfirmation = () => {
-    // Ici, vous intégreriez avec votre système de paiement/réservation
-    console.log("Réservation confirmée:", {
-      service: selectedService,
-      date: selectedDate,
-      time: selectedTime,
-      customer: customerInfo
-    });
-    setCurrentStep(5);
+  const handleFinalConfirmation = async () => {
+    try {
+      const reservationData = {
+        name: `${customerInfo.prenom} ${customerInfo.nom}`,
+        email: customerInfo.email,
+        phone: customerInfo.telephone,
+        service_type: selectedService?.id,
+        service_name: selectedService?.title,
+        preferred_date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '',
+        preferred_time: selectedTime,
+        message: customerInfo.message
+      };
+
+      const response = await fetch('/api/reservations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(reservationData)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log("Réservation confirmée:", result);
+        setCurrentStep(5);
+      } else {
+        alert(`Erreur lors de la réservation: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la réservation:', error);
+      alert('Erreur lors de la réservation. Veuillez réessayer.');
+    }
   };
 
   const resetReservation = () => {
@@ -318,20 +361,26 @@ const ReservationPage = () => {
                       </p>
                       
                       <div className="grid grid-cols-3 gap-2">
-                        {getAvailableSlots(selectedDate).map((slot) => (
-                          <Button
-                            key={slot}
-                            variant={selectedTime === slot ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setSelectedTime(slot)}
-                            className={selectedTime === slot 
-                              ? "bg-gradient-luxury text-white" 
-                              : "border-primary text-primary hover:bg-primary hover:text-white"
-                            }
-                          >
-                            {slot}
-                          </Button>
-                        ))}
+                        {isLoadingSlots ? (
+                          <p className="col-span-3 text-center text-muted-foreground">Chargement...</p>
+                        ) : getAvailableSlots(selectedDate).length === 0 ? (
+                          <p className="col-span-3 text-center text-muted-foreground">Aucun créneau disponible</p>
+                        ) : (
+                          getAvailableSlots(selectedDate).map((slot) => (
+                            <Button
+                              key={slot}
+                              variant={selectedTime === slot ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setSelectedTime(slot)}
+                              className={selectedTime === slot 
+                                ? "bg-gradient-luxury text-white" 
+                                : "border-primary text-primary hover:bg-primary hover:text-white"
+                              }
+                            >
+                              {slot}
+                            </Button>
+                          ))
+                        )}
                       </div>
                       
                       {selectedDate && selectedTime && (
