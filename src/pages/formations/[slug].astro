@@ -1,0 +1,190 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from "@layouts/BaseLayout.astro";
+import Header from "@components/Header";
+import Footer from "@components/Footer";
+import FloatingCTA from "@components/FloatingCTA";
+import ScrollToTop from "@components/ScrollToTop";
+
+export async function getStaticPaths() {
+  const formations = await getCollection('formations');
+  return formations.map((formation) => ({
+    params: { slug: formation.id },
+    props: { formation },
+  }));
+}
+
+const { formation } = Astro.props;
+
+const badgeColors = {
+  'Populaire': 'bg-primary text-white',
+  'Nouveau': 'bg-accent text-white',
+  'Certifiante': 'bg-gradient-to-r from-amber-400 to-yellow-500 text-white',
+  'Spécialisé': 'bg-secondary text-foreground'
+};
+---
+
+<BaseLayout title={`${formation.data.title} - Neill Beauty`} description={formation.data.description}>
+  <div class="min-h-screen bg-gradient-to-br from-background to-muted">
+    <Header />
+    
+    {/* Hero Section */}
+    <section class="pt-24 pb-16">
+      <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto text-center">
+          {formation.data.badge && (
+            <div class="flex justify-center mb-6">
+              <span class={`inline-block px-4 py-2 text-sm font-medium rounded-full ${badgeColors[formation.data.badge] || 'bg-secondary text-foreground'}`}>
+                {formation.data.badge}
+              </span>
+            </div>
+          )}
+          
+          <h1 class="font-elegant text-4xl lg:text-6xl font-bold text-foreground mb-4">
+            {formation.data.title}
+          </h1>
+          
+          <p class="text-2xl text-primary font-medium mb-6">
+            {formation.data.subtitle}
+          </p>
+          
+          <p class="text-xl text-muted-foreground mb-8 leading-relaxed">
+            {formation.data.description}
+          </p>
+          
+          <div class="flex flex-wrap justify-center gap-6 mb-12">
+            <div class="flex items-center bg-gradient-card border border-border/50 rounded-lg px-4 py-3">
+              <div class="text-center">
+                <div class="text-xs text-muted-foreground mb-1">Durée</div>
+                <div class="font-semibold text-foreground">{formation.data.duration}</div>
+              </div>
+            </div>
+            <div class="flex items-center bg-gradient-card border border-border/50 rounded-lg px-4 py-3">
+              <div class="text-center">
+                <div class="text-xs text-muted-foreground mb-1">Participants</div>
+                <div class="font-semibold text-foreground">{formation.data.participants}</div>
+              </div>
+            </div>
+            <div class="flex items-center bg-gradient-card border border-border/50 rounded-lg px-4 py-3">
+              <div class="text-center">
+                <div class="text-xs text-muted-foreground mb-1">Niveau</div>
+                <div class="font-semibold text-foreground">{formation.data.level}</div>
+              </div>
+            </div>
+            <div class="flex items-center bg-gradient-card border border-border/50 rounded-lg px-4 py-3">
+              <div class="text-center">
+                <div class="text-xs text-muted-foreground mb-1">Prix</div>
+                <div class="font-elegant text-xl font-bold text-primary">{formation.data.price}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* Program Details */}
+    <section class="py-16">
+      <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+          <div class="bg-gradient-card border border-border/50 rounded-2xl p-8 luxury-shadow">
+            <h2 class="font-elegant text-3xl font-bold text-foreground mb-8 text-center">
+              Programme de formation
+            </h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+              {formation.data.features.map((feature, index) => (
+                <div key={index} class="flex items-start space-x-3">
+                  <div class="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full flex items-center justify-center mt-0.5">
+                    <span class="text-white font-bold">{index + 1}</span>
+                  </div>
+                  <div>
+                    <span class="text-foreground font-medium">{feature}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* Advantages Section */}
+    <section class="py-16">
+      <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+          <h2 class="font-elegant text-3xl font-bold text-foreground mb-8 text-center">
+            Pourquoi choisir mes formations ?
+          </h2>
+          
+          <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-gradient-card border border-border/50 rounded-xl p-6 text-center luxury-shadow">
+              <div class="w-12 h-12 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-white text-xl">🏆</span>
+              </div>
+              <h3 class="font-semibold text-foreground mb-2">Formatrice Certifiée</h3>
+              <p class="text-sm text-muted-foreground">15 ans d'expérience et formations continues</p>
+            </div>
+            
+            <div class="bg-gradient-card border border-border/50 rounded-xl p-6 text-center luxury-shadow">
+              <div class="w-12 h-12 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-white text-xl">👥</span>
+              </div>
+              <h3 class="font-semibold text-foreground mb-2">Groupes Réduits</h3>
+              <p class="text-sm text-muted-foreground">Attention personnalisée garantie</p>
+            </div>
+            
+            <div class="bg-gradient-card border border-border/50 rounded-xl p-6 text-center luxury-shadow">
+              <div class="w-12 h-12 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-white text-xl">📚</span>
+              </div>
+              <h3 class="font-semibold text-foreground mb-2">Support Complet</h3>
+              <p class="text-sm text-muted-foreground">Manuel et suivi post-formation inclus</p>
+            </div>
+            
+            <div class="bg-gradient-card border border-border/50 rounded-xl p-6 text-center luxury-shadow">
+              <div class="w-12 h-12 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-white text-xl">✨</span>
+              </div>
+              <h3 class="font-semibold text-foreground mb-2">Produits Fournis</h3>
+              <p class="text-sm text-muted-foreground">Matériel professionnel haut de gamme</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* CTA Section */}
+    <section class="py-16">
+      <div class="container mx-auto px-4">
+        <div class="max-w-2xl mx-auto text-center">
+          <div class="bg-gradient-card border border-border/50 rounded-2xl p-8 luxury-shadow">
+            <h2 class="font-elegant text-3xl font-bold text-foreground mb-4">
+              Rejoignez cette formation
+            </h2>
+            <p class="text-muted-foreground mb-8">
+              Réservez votre place dès maintenant et commencez votre parcours d'apprentissage.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+              <a 
+                href="#contact"
+                class="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-lg font-medium hover:shadow-lg transition-all duration-300"
+              >
+                Réserver ma place
+              </a>
+              <a 
+                href="/"
+                class="inline-flex items-center justify-center px-8 py-4 border border-border text-foreground rounded-lg font-medium hover:bg-muted transition-all duration-300"
+              >
+                ← Retour à l'accueil
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <FloatingCTA client:load />
+    <ScrollToTop client:load />
+  </div>
+</BaseLayout>

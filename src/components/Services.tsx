@@ -106,13 +106,9 @@ const Services = ({ services }: ServicesProps) => {
                       size="sm" 
                       className="w-full border-primary text-primary hover:bg-gradient-to-r hover:from-amber-400 hover:to-yellow-500 hover:text-white hover:border-transparent elegant-shadow transition-all duration-300"
                       onClick={() => {
-                        const routes = [
-                          '/services/maquillage-professionnel',
-                          '/services/formations', 
-                          '/services/consultations-vip',
-                          '/services/relooking-complet'
-                        ];
-                        window.location.href = routes[index];
+                        // Navigate to individual service page
+                        const slug = services[index]?.id || `service-${index + 1}`;
+                        window.location.href = `/services/${slug}`;
                       }}
                     >
                       En savoir plus

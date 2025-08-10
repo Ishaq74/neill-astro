@@ -20,7 +20,8 @@ import {
   GraduationCap,
   HelpCircle,
   Building2,
-  Star
+  Star,
+  Calendar
 } from 'lucide-react';
 
 interface Service {
@@ -89,6 +90,21 @@ interface FAQ {
   is_active: number;
 }
 
+interface Reservation {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  service_type: string;
+  service_name: string;
+  preferred_date: string;
+  preferred_time: string;
+  message: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
 interface SiteSettings {
   id: number;
   site_name: string;
@@ -109,6 +125,7 @@ const AdminDashboard: React.FC = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
   
   const [loading, setLoading] = useState(true);
@@ -120,6 +137,7 @@ const AdminDashboard: React.FC = () => {
   const [editingTeamMember, setEditingTeamMember] = useState<TeamMember | null>(null);
   const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
   const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
+  const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
   
   const [isCreatingService, setIsCreatingService] = useState(false);
   const [isCreatingFormation, setIsCreatingFormation] = useState(false);
@@ -169,6 +187,7 @@ const AdminDashboard: React.FC = () => {
         loadTeamMembers(),
         loadTestimonials(),
         loadFaqs(),
+        loadReservations(),
         loadSiteSettings()
       ]);
     } catch (error) {
@@ -235,6 +254,18 @@ const AdminDashboard: React.FC = () => {
       }
     } catch (error) {
       console.error('Erreur lors du chargement des FAQs:', error);
+    }
+  };
+
+  const loadReservations = async () => {
+    try {
+      const response = await fetch('/api/admin/reservations');
+      if (response.ok) {
+        const data = await response.json();
+        setReservations(data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des réservations:', error);
     }
   };
 
@@ -471,6 +502,272 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  // Team CRUD operations
+  const startEditingTeamMember = (teamMember: TeamMember) => {
+    setEditingTeamMember(teamMember);
+    setTeamMemberFormData({
+      slug: teamMember.slug,
+      name: teamMember.name,
+      role: teamMember.role,
+      speciality: teamMember.speciality,
+      image_path: teamMember.image_path,
+      experience: teamMember.experience,
+      description: teamMember.description,
+      certifications: teamMember.certifications,
+      achievements: teamMember.achievements,
+      social_instagram: teamMember.social_instagram,
+      social_linkedin: teamMember.social_linkedin,
+      social_email: teamMember.social_email,
+      sort_order: teamMember.sort_order
+    });
+  };
+
+  const startCreatingTeamMember = () => {
+    setIsCreatingTeamMember(true);
+    resetTeamMemberForm();
+  };
+
+  const cancelTeamMemberEdit = () => {
+    setEditingTeamMember(null);
+    setIsCreatingTeamMember(false);
+    resetTeamMemberForm();
+  };
+
+  const saveTeamMember = async () => {
+    try {
+      let response;
+      const payload = teamMemberFormData;
+
+      if (editingTeamMember) {
+        response = await fetch('/api/admin/team', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...payload, id: editingTeamMember.id })
+        });
+      } else {
+        response = await fetch('/api/admin/team', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      if (response.ok) {
+        await loadTeamMembers();
+        cancelTeamMemberEdit();
+      }
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+    }
+  };
+
+  const deleteTeamMember = async (id: number) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce membre ?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/team?id=${id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        await loadTeamMembers();
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+    }
+  };
+
+  // Testimonial CRUD operations
+  const startEditingTestimonial = (testimonial: Testimonial) => {
+    setEditingTestimonial(testimonial);
+    setTestimonialFormData({
+      slug: testimonial.slug,
+      name: testimonial.name,
+      role: testimonial.role,
+      image_path: testimonial.image_path,
+      rating: testimonial.rating,
+      text: testimonial.text,
+      service: testimonial.service,
+      sort_order: testimonial.sort_order
+    });
+  };
+
+  const startCreatingTestimonial = () => {
+    setIsCreatingTestimonial(true);
+    resetTestimonialForm();
+  };
+
+  const cancelTestimonialEdit = () => {
+    setEditingTestimonial(null);
+    setIsCreatingTestimonial(false);
+    resetTestimonialForm();
+  };
+
+  const saveTestimonial = async () => {
+    try {
+      let response;
+      const payload = testimonialFormData;
+
+      if (editingTestimonial) {
+        response = await fetch('/api/admin/testimonials', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...payload, id: editingTestimonial.id })
+        });
+      } else {
+        response = await fetch('/api/admin/testimonials', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      if (response.ok) {
+        await loadTestimonials();
+        cancelTestimonialEdit();
+      }
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+    }
+  };
+
+  const deleteTestimonial = async (id: number) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce témoignage ?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/testimonials?id=${id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        await loadTestimonials();
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+    }
+  };
+
+  // FAQ CRUD operations
+  const startEditingFaq = (faq: FAQ) => {
+    setEditingFaq(faq);
+    setFaqFormData({
+      question: faq.question,
+      answer: faq.answer,
+      category: faq.category,
+      sort_order: faq.sort_order,
+      is_active: faq.is_active
+    });
+  };
+
+  const startCreatingFaq = () => {
+    setIsCreatingFaq(true);
+    resetFaqForm();
+  };
+
+  const cancelFaqEdit = () => {
+    setEditingFaq(null);
+    setIsCreatingFaq(false);
+    resetFaqForm();
+  };
+
+  const saveFaq = async () => {
+    try {
+      let response;
+      const payload = faqFormData;
+
+      if (editingFaq) {
+        response = await fetch('/api/admin/faqs', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...payload, id: editingFaq.id })
+        });
+      } else {
+        response = await fetch('/api/admin/faqs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      if (response.ok) {
+        await loadFaqs();
+        cancelFaqEdit();
+      }
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+    }
+  };
+
+  const deleteFaq = async (id: number) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette FAQ ?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/faqs?id=${id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        await loadFaqs();
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+    }
+  };
+
+  // Reservation management operations
+  const updateReservationStatus = async (id: number, newStatus: string) => {
+    try {
+      const reservation = reservations.find(r => r.id === id);
+      if (!reservation) return;
+
+      const response = await fetch('/api/admin/reservations', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...reservation, status: newStatus })
+      });
+
+      if (response.ok) {
+        await loadReservations();
+      }
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour:', error);
+    }
+  };
+
+  const deleteReservation = async (id: number) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/reservations?id=${id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        await loadReservations();
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+    }
+  };
+
+  // Site Settings operations
+  const saveSiteSettings = async () => {
+    try {
+      const response = await fetch('/api/admin/site-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settingsFormData)
+      });
+
+      if (response.ok) {
+        await loadSiteSettings();
+        alert('Paramètres mis à jour avec succès !');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await fetch('/api/admin/auth', { method: 'DELETE' });
@@ -508,7 +805,7 @@ const AdminDashboard: React.FC = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="services" className="flex items-center gap-2">
               <Briefcase className="h-4 w-4" />
               Services
@@ -516,6 +813,10 @@ const AdminDashboard: React.FC = () => {
             <TabsTrigger value="formations" className="flex items-center gap-2">
               <GraduationCap className="h-4 w-4" />
               Formations
+            </TabsTrigger>
+            <TabsTrigger value="reservations" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Réservations
             </TabsTrigger>
             <TabsTrigger value="team" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
@@ -944,70 +1245,699 @@ const AdminDashboard: React.FC = () => {
             </Card>
           </TabsContent>
 
-          {/* Team Tab - Placeholder for now */}
+          {/* Reservations Tab */}
+          <TabsContent value="reservations">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gestion des Réservations</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {reservations.map((reservation) => (
+                    <div key={reservation.id} className="p-4 border rounded-lg bg-white">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="text-lg font-medium">{reservation.name}</h3>
+                            <Badge 
+                              variant={
+                                reservation.status === 'confirmed' ? 'default' :
+                                reservation.status === 'pending' ? 'secondary' :
+                                reservation.status === 'completed' ? 'outline' : 'destructive'
+                              }
+                            >
+                              {reservation.status}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4 text-sm mb-3">
+                            <div>
+                              <span className="text-gray-500">Email:</span>
+                              <span className="ml-2">{reservation.email}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Téléphone:</span>
+                              <span className="ml-2">{reservation.phone || 'Non fourni'}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Service:</span>
+                              <span className="ml-2">{reservation.service_name || reservation.service_type}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Date souhaitée:</span>
+                              <span className="ml-2">{reservation.preferred_date} à {reservation.preferred_time}</span>
+                            </div>
+                          </div>
+                          {reservation.message && (
+                            <div className="text-sm">
+                              <span className="text-gray-500">Message:</span>
+                              <p className="text-gray-600 mt-1 italic">"{reservation.message}"</p>
+                            </div>
+                          )}
+                          <div className="text-xs text-gray-400 mt-2">
+                            Créée le: {new Date(reservation.created_at).toLocaleDateString('fr-FR')}
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <select
+                            value={reservation.status}
+                            onChange={(e) => updateReservationStatus(reservation.id, e.target.value)}
+                            className="text-sm px-2 py-1 rounded border"
+                          >
+                            <option value="pending">En attente</option>
+                            <option value="confirmed">Confirmée</option>
+                            <option value="completed">Terminée</option>
+                            <option value="cancelled">Annulée</option>
+                          </select>
+                          <Button
+                            onClick={() => deleteReservation(reservation.id)}
+                            size="sm"
+                            variant="destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {reservations.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    Aucune réservation pour le moment
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Team Tab */}
           <TabsContent value="team">
             <Card>
               <CardHeader>
-                <CardTitle>Gestion de l'Équipe</CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Gestion de l'Équipe</CardTitle>
+                  <Button onClick={startCreatingTeamMember}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nouveau Membre
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-500 mb-4">
-                  Gestion des membres de l'équipe disponible prochainement.
-                </p>
-                <div className="text-sm text-gray-400">
-                  Fonctionnalités à venir: Ajouter/modifier/supprimer des membres, gérer leurs profils, spécialités et réseaux sociaux.
+                {(editingTeamMember || isCreatingTeamMember) && (
+                  <div className="mb-6 p-4 border rounded-lg bg-gray-50">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-medium">
+                        {editingTeamMember ? 'Modifier le membre' : 'Nouveau membre'}
+                      </h3>
+                      <Button onClick={cancelTeamMemberEdit} variant="ghost" size="sm">
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="member-slug">Slug</Label>
+                        <Input
+                          id="member-slug"
+                          value={teamMemberFormData.slug}
+                          onChange={(e) => setTeamMemberFormData(prev => ({ ...prev, slug: e.target.value }))}
+                          placeholder="membre-slug"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="member-name">Nom</Label>
+                        <Input
+                          id="member-name"
+                          value={teamMemberFormData.name}
+                          onChange={(e) => setTeamMemberFormData(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="Nom du membre"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="member-role">Fonction</Label>
+                        <Input
+                          id="member-role"
+                          value={teamMemberFormData.role}
+                          onChange={(e) => setTeamMemberFormData(prev => ({ ...prev, role: e.target.value }))}
+                          placeholder="Maquilleuse Senior"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="member-speciality">Spécialité</Label>
+                        <Input
+                          id="member-speciality"
+                          value={teamMemberFormData.speciality}
+                          onChange={(e) => setTeamMemberFormData(prev => ({ ...prev, speciality: e.target.value }))}
+                          placeholder="Maquillage mariée"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="member-experience">Expérience</Label>
+                        <Input
+                          id="member-experience"
+                          value={teamMemberFormData.experience}
+                          onChange={(e) => setTeamMemberFormData(prev => ({ ...prev, experience: e.target.value }))}
+                          placeholder="10 ans d'expérience"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="member-image">Image</Label>
+                        <Input
+                          id="member-image"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setTeamMemberFormData(prev => ({ ...prev, image_path: `/images/team/${file.name}` }));
+                            }
+                          }}
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <Label htmlFor="member-description">Description</Label>
+                        <Textarea
+                          id="member-description"
+                          value={teamMemberFormData.description}
+                          onChange={(e) => setTeamMemberFormData(prev => ({ ...prev, description: e.target.value }))}
+                          placeholder="Description du membre"
+                          rows={3}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="member-certifications">Certifications (JSON)</Label>
+                        <Textarea
+                          id="member-certifications"
+                          value={teamMemberFormData.certifications}
+                          onChange={(e) => setTeamMemberFormData(prev => ({ ...prev, certifications: e.target.value }))}
+                          placeholder='["Certification 1", "Certification 2"]'
+                          rows={2}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="member-achievements">Réalisations (JSON)</Label>
+                        <Textarea
+                          id="member-achievements"
+                          value={teamMemberFormData.achievements}
+                          onChange={(e) => setTeamMemberFormData(prev => ({ ...prev, achievements: e.target.value }))}
+                          placeholder='["Réalisation 1", "Réalisation 2"]'
+                          rows={2}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="member-instagram">Instagram</Label>
+                        <Input
+                          id="member-instagram"
+                          value={teamMemberFormData.social_instagram}
+                          onChange={(e) => setTeamMemberFormData(prev => ({ ...prev, social_instagram: e.target.value }))}
+                          placeholder="@username"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="member-linkedin">LinkedIn</Label>
+                        <Input
+                          id="member-linkedin"
+                          value={teamMemberFormData.social_linkedin}
+                          onChange={(e) => setTeamMemberFormData(prev => ({ ...prev, social_linkedin: e.target.value }))}
+                          placeholder="https://linkedin.com/in/username"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="member-email">Email</Label>
+                        <Input
+                          id="member-email"
+                          value={teamMemberFormData.social_email}
+                          onChange={(e) => setTeamMemberFormData(prev => ({ ...prev, social_email: e.target.value }))}
+                          placeholder="email@example.com"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="member-sort">Ordre d'affichage</Label>
+                        <Input
+                          id="member-sort"
+                          type="number"
+                          value={teamMemberFormData.sort_order}
+                          onChange={(e) => setTeamMemberFormData(prev => ({ ...prev, sort_order: parseInt(e.target.value) }))}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end mt-4">
+                      <Button onClick={saveTeamMember}>
+                        <Save className="h-4 w-4 mr-2" />
+                        Sauvegarder
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  {teamMembers.map((member) => (
+                    <div key={member.id} className="p-4 border rounded-lg bg-white">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="text-lg font-medium">{member.name}</h3>
+                            <Badge variant="secondary">{member.sort_order}</Badge>
+                          </div>
+                          <div className="flex gap-4 text-sm text-gray-500 mb-2">
+                            <span>Fonction: {member.role}</span>
+                            <span>Spécialité: {member.speciality}</span>
+                            <span>Expérience: {member.experience}</span>
+                          </div>
+                          <p className="text-gray-600 mb-2">{member.description}</p>
+                          <div className="flex gap-2 text-sm">
+                            {member.social_instagram && <span>📱 {member.social_instagram}</span>}
+                            {member.social_linkedin && <span>💼 LinkedIn</span>}
+                            {member.social_email && <span>✉️ {member.social_email}</span>}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => startEditingTeamMember(member)}
+                            size="sm"
+                            variant="outline"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            onClick={() => deleteTeamMember(member.id)}
+                            size="sm"
+                            variant="destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Testimonials Tab - Placeholder for now */}
+          {/* Testimonials Tab */}
           <TabsContent value="testimonials">
             <Card>
               <CardHeader>
-                <CardTitle>Gestion des Témoignages</CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Gestion des Témoignages</CardTitle>
+                  <Button onClick={startCreatingTestimonial}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nouveau Témoignage
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-500 mb-4">
-                  Gestion des témoignages clients disponible prochainement.
-                </p>
-                <div className="text-sm text-gray-400">
-                  Fonctionnalités à venir: Ajouter/modifier/supprimer des témoignages, gérer les notes et les avis clients.
+                {(editingTestimonial || isCreatingTestimonial) && (
+                  <div className="mb-6 p-4 border rounded-lg bg-gray-50">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-medium">
+                        {editingTestimonial ? 'Modifier le témoignage' : 'Nouveau témoignage'}
+                      </h3>
+                      <Button onClick={cancelTestimonialEdit} variant="ghost" size="sm">
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="testimonial-slug">Slug</Label>
+                        <Input
+                          id="testimonial-slug"
+                          value={testimonialFormData.slug}
+                          onChange={(e) => setTestimonialFormData(prev => ({ ...prev, slug: e.target.value }))}
+                          placeholder="temoignage-slug"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="testimonial-name">Nom</Label>
+                        <Input
+                          id="testimonial-name"
+                          value={testimonialFormData.name}
+                          onChange={(e) => setTestimonialFormData(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="Nom du client"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="testimonial-role">Profession/Titre</Label>
+                        <Input
+                          id="testimonial-role"
+                          value={testimonialFormData.role}
+                          onChange={(e) => setTestimonialFormData(prev => ({ ...prev, role: e.target.value }))}
+                          placeholder="Mariée, Professionnelle..."
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="testimonial-rating">Note</Label>
+                        <Input
+                          id="testimonial-rating"
+                          type="number"
+                          min="1"
+                          max="5"
+                          value={testimonialFormData.rating}
+                          onChange={(e) => setTestimonialFormData(prev => ({ ...prev, rating: parseInt(e.target.value) }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="testimonial-service">Service</Label>
+                        <Input
+                          id="testimonial-service"
+                          value={testimonialFormData.service}
+                          onChange={(e) => setTestimonialFormData(prev => ({ ...prev, service: e.target.value }))}
+                          placeholder="Maquillage mariée, Formation..."
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="testimonial-image">Image</Label>
+                        <Input
+                          id="testimonial-image"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setTestimonialFormData(prev => ({ ...prev, image_path: `/images/testimonials/${file.name}` }));
+                            }
+                          }}
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <Label htmlFor="testimonial-text">Témoignage</Label>
+                        <Textarea
+                          id="testimonial-text"
+                          value={testimonialFormData.text}
+                          onChange={(e) => setTestimonialFormData(prev => ({ ...prev, text: e.target.value }))}
+                          placeholder="Texte du témoignage"
+                          rows={4}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="testimonial-sort">Ordre d'affichage</Label>
+                        <Input
+                          id="testimonial-sort"
+                          type="number"
+                          value={testimonialFormData.sort_order}
+                          onChange={(e) => setTestimonialFormData(prev => ({ ...prev, sort_order: parseInt(e.target.value) }))}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end mt-4">
+                      <Button onClick={saveTestimonial}>
+                        <Save className="h-4 w-4 mr-2" />
+                        Sauvegarder
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  {testimonials.map((testimonial) => (
+                    <div key={testimonial.id} className="p-4 border rounded-lg bg-white">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="text-lg font-medium">{testimonial.name}</h3>
+                            <div className="flex">
+                              {Array.from({ length: testimonial.rating }, (_, i) => (
+                                <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
+                              ))}
+                            </div>
+                            <Badge variant="secondary">{testimonial.sort_order}</Badge>
+                          </div>
+                          <div className="flex gap-4 text-sm text-gray-500 mb-2">
+                            <span>Fonction: {testimonial.role}</span>
+                            <span>Service: {testimonial.service}</span>
+                          </div>
+                          <p className="text-gray-600 italic">"{testimonial.text}"</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => startEditingTestimonial(testimonial)}
+                            size="sm"
+                            variant="outline"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            onClick={() => deleteTestimonial(testimonial.id)}
+                            size="sm"
+                            variant="destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* FAQs Tab - Placeholder for now */}
+          {/* FAQs Tab */}
           <TabsContent value="faqs">
             <Card>
               <CardHeader>
-                <CardTitle>Gestion des FAQs</CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Gestion des FAQs</CardTitle>
+                  <Button onClick={startCreatingFaq}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nouvelle FAQ
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-500 mb-4">
-                  Gestion des questions fréquentes disponible prochainement.
-                </p>
-                <div className="text-sm text-gray-400">
-                  Fonctionnalités à venir: Ajouter/modifier/supprimer des FAQs, organiser par catégories.
+                {(editingFaq || isCreatingFaq) && (
+                  <div className="mb-6 p-4 border rounded-lg bg-gray-50">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-medium">
+                        {editingFaq ? 'Modifier la FAQ' : 'Nouvelle FAQ'}
+                      </h3>
+                      <Button onClick={cancelFaqEdit} variant="ghost" size="sm">
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 gap-4">
+                      <div>
+                        <Label htmlFor="faq-question">Question</Label>
+                        <Input
+                          id="faq-question"
+                          value={faqFormData.question}
+                          onChange={(e) => setFaqFormData(prev => ({ ...prev, question: e.target.value }))}
+                          placeholder="Question fréquente"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="faq-answer">Réponse</Label>
+                        <Textarea
+                          id="faq-answer"
+                          value={faqFormData.answer}
+                          onChange={(e) => setFaqFormData(prev => ({ ...prev, answer: e.target.value }))}
+                          placeholder="Réponse à la question"
+                          rows={4}
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="faq-category">Catégorie</Label>
+                          <select
+                            id="faq-category"
+                            value={faqFormData.category}
+                            onChange={(e) => setFaqFormData(prev => ({ ...prev, category: e.target.value }))}
+                            className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                          >
+                            <option value="general">Général</option>
+                            <option value="services">Services</option>
+                            <option value="formations">Formations</option>
+                            <option value="tarifs">Tarifs</option>
+                            <option value="pratique">Pratique</option>
+                          </select>
+                        </div>
+                        <div>
+                          <Label htmlFor="faq-sort">Ordre d'affichage</Label>
+                          <Input
+                            id="faq-sort"
+                            type="number"
+                            value={faqFormData.sort_order}
+                            onChange={(e) => setFaqFormData(prev => ({ ...prev, sort_order: parseInt(e.target.value) }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="faq-active">Statut</Label>
+                          <select
+                            id="faq-active"
+                            value={faqFormData.is_active}
+                            onChange={(e) => setFaqFormData(prev => ({ ...prev, is_active: parseInt(e.target.value) }))}
+                            className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                          >
+                            <option value={1}>Active</option>
+                            <option value={0}>Inactive</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end mt-4">
+                      <Button onClick={saveFaq}>
+                        <Save className="h-4 w-4 mr-2" />
+                        Sauvegarder
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  {faqs.map((faq) => (
+                    <div key={faq.id} className="p-4 border rounded-lg bg-white">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="text-lg font-medium">{faq.question}</h3>
+                            <Badge variant={faq.is_active ? "default" : "secondary"}>
+                              {faq.is_active ? "Active" : "Inactive"}
+                            </Badge>
+                            <Badge variant="outline">{faq.category}</Badge>
+                            <Badge variant="secondary">{faq.sort_order}</Badge>
+                          </div>
+                          <p className="text-gray-600">{faq.answer}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => startEditingFaq(faq)}
+                            size="sm"
+                            variant="outline"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            onClick={() => deleteFaq(faq.id)}
+                            size="sm"
+                            variant="destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Settings Tab - Placeholder for now */}
+          {/* Settings Tab */}
           <TabsContent value="settings">
             <Card>
               <CardHeader>
                 <CardTitle>Paramètres du Site</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-500 mb-4">
-                  Gestion des paramètres généraux du site disponible prochainement.
-                </p>
-                <div className="text-sm text-gray-400">
-                  Fonctionnalités à venir: Modifier les informations de contact, réseaux sociaux, nom du site, description, etc.
-                </div>
+                {siteSettings && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="settings-site-name">Nom du site</Label>
+                        <Input
+                          id="settings-site-name"
+                          value={settingsFormData.site_name || ''}
+                          onChange={(e) => setSettingsFormData(prev => ({ ...prev, site_name: e.target.value }))}
+                          placeholder="Neill Beauty"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="settings-contact-email">Email de contact</Label>
+                        <Input
+                          id="settings-contact-email"
+                          type="email"
+                          value={settingsFormData.contact_email || ''}
+                          onChange={(e) => setSettingsFormData(prev => ({ ...prev, contact_email: e.target.value }))}
+                          placeholder="contact@neillbeauty.fr"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="settings-contact-phone">Téléphone de contact</Label>
+                        <Input
+                          id="settings-contact-phone"
+                          value={settingsFormData.contact_phone || ''}
+                          onChange={(e) => setSettingsFormData(prev => ({ ...prev, contact_phone: e.target.value }))}
+                          placeholder="+33 6 XX XX XX XX"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="settings-contact-address">Adresse</Label>
+                        <Input
+                          id="settings-contact-address"
+                          value={settingsFormData.contact_address || ''}
+                          onChange={(e) => setSettingsFormData(prev => ({ ...prev, contact_address: e.target.value }))}
+                          placeholder="Paris, France"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <Label htmlFor="settings-site-description">Description du site</Label>
+                        <Textarea
+                          id="settings-site-description"
+                          value={settingsFormData.site_description || ''}
+                          onChange={(e) => setSettingsFormData(prev => ({ ...prev, site_description: e.target.value }))}
+                          placeholder="Description de votre site"
+                          rows={3}
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <Label htmlFor="settings-business-hours">Horaires d'ouverture</Label>
+                        <Textarea
+                          id="settings-business-hours"
+                          value={settingsFormData.business_hours || ''}
+                          onChange={(e) => setSettingsFormData(prev => ({ ...prev, business_hours: e.target.value }))}
+                          placeholder="Lun-Ven: 9h-18h, Sam: 9h-17h"
+                          rows={2}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="border-t pt-6">
+                      <h3 className="text-lg font-medium mb-4">Réseaux sociaux</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="settings-instagram">Instagram</Label>
+                          <Input
+                            id="settings-instagram"
+                            value={settingsFormData.social_instagram || ''}
+                            onChange={(e) => setSettingsFormData(prev => ({ ...prev, social_instagram: e.target.value }))}
+                            placeholder="@instagram"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="settings-facebook">Facebook</Label>
+                          <Input
+                            id="settings-facebook"
+                            value={settingsFormData.social_facebook || ''}
+                            onChange={(e) => setSettingsFormData(prev => ({ ...prev, social_facebook: e.target.value }))}
+                            placeholder="@facebook"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="settings-tiktok">TikTok</Label>
+                          <Input
+                            id="settings-tiktok"
+                            value={settingsFormData.social_tiktok || ''}
+                            onChange={(e) => setSettingsFormData(prev => ({ ...prev, social_tiktok: e.target.value }))}
+                            placeholder="@tiktok"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end">
+                      <Button onClick={saveSiteSettings} className="bg-gradient-luxury text-white">
+                        <Save className="h-4 w-4 mr-2" />
+                        Sauvegarder les paramètres
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

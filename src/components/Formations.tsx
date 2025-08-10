@@ -2,8 +2,40 @@ import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Clock, Users, Award, BookOpen, CheckCircle, ArrowRight } from "lucide-react";
 
-const Formations = () => {
-  const formations = [
+interface FormationsProps {
+  formations: Array<{
+    id: string;
+    data: {
+      title: string;
+      subtitle: string;
+      description: string;
+      level: string;
+      duration: string;
+      participants: string;
+      price: string;
+      features: string[];
+      imagePath?: string;
+      badge: string;
+      sortOrder: number;
+    };
+  }>;
+}
+
+const Formations = ({ formations }: FormationsProps) => {
+  // Transform the data from collections to match expected structure
+  const formationsData = formations?.length > 0 ? formations.map(formation => ({
+    id: formation.data.sortOrder,
+    title: formation.data.title,
+    subtitle: formation.data.subtitle,
+    duration: formation.data.duration,
+    participants: formation.data.participants,
+    level: formation.data.level,
+    price: formation.data.price,
+    description: formation.data.description,
+    program: formation.data.features,
+    badge: formation.data.badge
+  })) : [
+    // Fallback data if no formations in database
     {
       id: 1,
       title: "Initiation au Maquillage",
@@ -21,60 +53,6 @@ const Formations = () => {
         "Kit de démarrage offert"
       ],
       badge: "Populaire"
-    },
-    {
-      id: 2,
-      title: "Perfectionnement",
-      subtitle: "Techniques Avancées",
-      duration: "6 heures",
-      participants: "1-2 personnes",
-      level: "Intermédiaire",
-      price: "250€",
-      description: "Perfectionnez vos techniques et découvrez les secrets des professionnels pour des looks sophistiqués.",
-      program: [
-        "Contouring et highlighting",
-        "Maquillage des yeux avancé",
-        "Techniques de lèvres",
-        "Looks jour/soir",
-        "Certification incluse"
-      ],
-      badge: "Nouveau"
-    },
-    {
-      id: 3,
-      title: "Formation Professionnelle",
-      subtitle: "Devenir MUA",
-      duration: "30 heures",
-      participants: "1-5 personnes",
-      level: "Professionnel",
-      price: "1200€",
-      description: "Formation complète pour devenir maquilleur(se) professionnel(le) avec certification reconnue.",
-      program: [
-        "Anatomie et morphologie",
-        "Techniques professionnelles",
-        "Maquillage artistique",
-        "Gestion clientèle",
-        "Stage pratique inclus"
-      ],
-      badge: "Certifiante"
-    },
-    {
-      id: 4,
-      title: "Atelier Mariée",
-      subtitle: "Le Jour J",
-      duration: "4 heures",
-      participants: "1-4 personnes",
-      level: "Tous niveaux",
-      price: "180€",
-      description: "Spécialisez-vous dans le maquillage mariée et créez des looks inoubliables pour le plus beau jour.",
-      program: [
-        "Tendances maquillage mariée",
-        "Techniques longue tenue",
-        "Essais et retouches",
-        "Conseils personnalisés",
-        "Photos souvenirs"
-      ],
-      badge: "Spécialisé"
     }
   ];
 
@@ -122,7 +100,7 @@ const Formations = () => {
 
         {/* Formations Grid */}
         <div className="grid lg:grid-cols-2 gap-8 mb-16">
-          {formations.map((formation, index) => (
+          {formationsData.map((formation, index) => (
             <Card 
               key={formation.id} 
               className="group bg-gradient-card border-border/50 hover-glow overflow-hidden animate-fade-in"
@@ -194,7 +172,12 @@ const Formations = () => {
                         </span>
                         <span className="text-sm text-muted-foreground ml-1">/ personne</span>
                       </div>
-                      <Button className="bg-gradient-luxury text-white group-hover:shadow-lg transition-all">
+                      <Button className="bg-gradient-luxury text-white group-hover:shadow-lg transition-all"
+                        onClick={() => {
+                          // Navigate to individual formation page
+                          const slug = formations[index]?.id || `formation-${formation.id}`;
+                          window.location.href = `/formations/${slug}`;
+                        }}>
                         Réserver
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
