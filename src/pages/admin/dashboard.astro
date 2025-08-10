@@ -1,0 +1,12 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import AdminDashboard from "@components/AdminDashboard";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Admin Dashboard" description="Dashboard d'administration">
+  <div class="min-h-screen bg-gray-50">
+    <AdminDashboard client:load />
+  </div>
+</BaseLayout>
