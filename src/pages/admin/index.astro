@@ -1,0 +1,12 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import AdminLogin from "@components/AdminLogin";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Admin - Connexion" description="Page de connexion administrateur">
+  <div class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <AdminLogin client:load />
+  </div>
+</BaseLayout>
