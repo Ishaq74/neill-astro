@@ -67,7 +67,7 @@ const Hero = () => {
             <div className="relative overflow-hidden rounded-3xl luxury-shadow hover:scale-105 transition-transform duration-300">
               <img
                 src={heroImage.src}
-                alt="Artisan Beauty - Maquillage professionnel"
+                alt="Neill Beauty - Maquillage professionnel"
                 className="w-full h-[400px] sm:h-[500px] lg:h-[600px] object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>

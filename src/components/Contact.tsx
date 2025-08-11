@@ -125,7 +125,7 @@ const Contact = ({ siteSettings }: ContactProps) => {
                   <div className="flex items-start space-x-3">
                     <MapPin className="w-5 h-5 text-primary mt-1" />
                     <div>
-                      <p className="font-medium text-foreground">Studio {siteSettings?.siteName || "Artisan Beauty"}</p>
+                      <p className="font-medium text-foreground">Studio {siteSettings?.siteName || "Neill Beauty"}</p>
                       <p className="text-sm text-muted-foreground">
                         {siteSettings?.contactAddress || "123 Rue de la Beauté, 75001 Paris, France"}
                       </p>
@@ -144,7 +144,7 @@ const Contact = ({ siteSettings }: ContactProps) => {
                     <Mail className="w-5 h-5 text-primary" />
                     <div>
                       <p className="text-sm text-muted-foreground">Email</p>
-                      <p className="font-medium text-foreground">{siteSettings?.contactEmail || "contact@artisanbeauty.fr"}</p>
+                      <p className="font-medium text-foreground">{siteSettings?.contactEmail || "contact@neillbeauty.fr"}</p>
                     </div>
                   </div>
                 </div>
