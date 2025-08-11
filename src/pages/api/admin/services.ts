@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import Database from 'better-sqlite3';
+import { DatabaseUtil } from '../../../lib/database';
 
 export const prerender = false;
 
@@ -18,13 +18,12 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    const db = new Database('./data/services.sqlite');
-    const services = db.prepare('SELECT * FROM services ORDER BY sort_order').all();
-    db.close();
-
-    return new Response(JSON.stringify(services), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    return await DatabaseUtil.withDatabase('services.sqlite', (db) => {
+      const services = db.prepare('SELECT * FROM services ORDER BY sort_order').all();
+      return new Response(JSON.stringify(services), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: 'Erreur serveur' }), {
