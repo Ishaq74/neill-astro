@@ -21,7 +21,7 @@ export const GET: APIRoute = async ({ request }) => {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     
-    const db = new Database('./data/reservations.sqlite');
+    const db = DatabaseUtil.getDatabase('reservations.sqlite');
     let query = 'SELECT * FROM parameters ORDER BY category, key';
     let params = [];
     
@@ -31,7 +31,7 @@ export const GET: APIRoute = async ({ request }) => {
     }
     
     const settings = db.prepare(query).all(...params);
-    db.close();
+    
 
     return new Response(JSON.stringify(settings), {
       status: 200,
@@ -65,7 +65,7 @@ export const PUT: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = new Database('./data/reservations.sqlite');
+    const db = DatabaseUtil.getDatabase('reservations.sqlite');
     
     const stmt = db.prepare(`
       UPDATE parameters 
@@ -76,14 +76,14 @@ export const PUT: APIRoute = async ({ request }) => {
     const result = stmt.run(value, key);
     
     if (result.changes === 0) {
-      db.close();
+      
       return new Response(JSON.stringify({ error: 'Paramètre non trouvé' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' }
       });
     }
     
-    db.close();
+    
 
     return new Response(JSON.stringify({ key, value, message: 'Paramètre mis à jour avec succès' }), {
       status: 200,
@@ -117,7 +117,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = new Database('./data/reservations.sqlite');
+    const db = DatabaseUtil.getDatabase('reservations.sqlite');
     
     const stmt = db.prepare(`
       INSERT INTO parameters (key, value, description, category)
@@ -125,7 +125,7 @@ export const POST: APIRoute = async ({ request }) => {
     `);
     
     const result = stmt.run(key, value || '', description || '', category);
-    db.close();
+    
 
     return new Response(JSON.stringify({ 
       id: result.lastInsertRowid,

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import Database from 'better-sqlite3';
+import { DatabaseUtil } from '../../lib/database';
 import nodemailer from 'nodemailer';
 
 export const prerender = false;
@@ -116,7 +116,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Save to database
-    const contactDb = new Database('./data/contact.sqlite');
+    const contactDb = DatabaseUtil.getDatabase('contact.sqlite');
     
     const stmt = contactDb.prepare(`
       INSERT INTO contact_messages (name, email, phone, subject, message, status)
@@ -135,7 +135,7 @@ export const POST: APIRoute = async ({ request }) => {
     contactDb.close();
 
     // Get SMTP configuration
-    const settingsDb = new Database('./data/site_settings.sqlite');
+    const settingsDb = DatabaseUtil.getDatabase('site_settings.sqlite');
     const smtpConfig = settingsDb.prepare(`
       SELECT smtp_host, smtp_port, smtp_username, smtp_password, smtp_secure, smtp_from_name, contact_email
       FROM site_settings 

@@ -18,7 +18,7 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    const db = new Database('./data/reservations.sqlite');
+    const db = DatabaseUtil.getDatabase('reservations.sqlite');
     
     const invoices = db.prepare(`
       SELECT i.*, r.name as customer_name, r.email as customer_email, r.service_name 
@@ -27,7 +27,7 @@ export const GET: APIRoute = async ({ request }) => {
       ORDER BY i.created_at DESC
     `).all();
     
-    db.close();
+    
 
     return new Response(JSON.stringify(invoices), {
       status: 200,
@@ -73,7 +73,7 @@ export const POST: APIRoute = async ({ request }) => {
     const now = new Date();
     const invoiceNumber = `INV-${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}-${Date.now().toString().slice(-6)}`;
 
-    const db = new Database('./data/reservations.sqlite');
+    const db = DatabaseUtil.getDatabase('reservations.sqlite');
     
     const stmt = db.prepare(`
       INSERT INTO invoices (
@@ -94,7 +94,7 @@ export const POST: APIRoute = async ({ request }) => {
     );
     
     const newInvoice = db.prepare('SELECT * FROM invoices WHERE id = ?').get(result.lastInsertRowid);
-    db.close();
+    
 
     return new Response(JSON.stringify(newInvoice), {
       status: 201,
@@ -128,12 +128,12 @@ export const PUT: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = new Database('./data/reservations.sqlite');
+    const db = DatabaseUtil.getDatabase('reservations.sqlite');
     
     // Get current invoice data
     const currentInvoice = db.prepare('SELECT * FROM invoices WHERE id = ?').get(id);
     if (!currentInvoice) {
-      db.close();
+      
       return new Response(JSON.stringify({ error: 'Facture non trouvée' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' }
@@ -171,7 +171,7 @@ export const PUT: APIRoute = async ({ request }) => {
     );
     
     const updatedInvoice = db.prepare('SELECT * FROM invoices WHERE id = ?').get(id);
-    db.close();
+    
 
     return new Response(JSON.stringify(updatedInvoice), {
       status: 200,
@@ -205,10 +205,10 @@ export const DELETE: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = new Database('./data/reservations.sqlite');
+    const db = DatabaseUtil.getDatabase('reservations.sqlite');
     const stmt = db.prepare('DELETE FROM invoices WHERE id = ?');
     const result = stmt.run(id);
-    db.close();
+    
     
     if (result.changes === 0) {
       return new Response(JSON.stringify({ error: 'Facture non trouvée' }), {

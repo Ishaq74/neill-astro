@@ -245,5 +245,5 @@ export const DELETE: APIRoute = async ({ request, url }) => {
 };
 
 process.on('exit', () => {
-  db.close();
+  
 });

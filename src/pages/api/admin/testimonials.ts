@@ -18,9 +18,9 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    const db = new Database('./data/testimonials.sqlite');
+    const db = DatabaseUtil.getDatabase('testimonials.sqlite');
     const testimonials = db.prepare('SELECT * FROM testimonials ORDER BY sort_order').all();
-    db.close();
+    
 
     return new Response(JSON.stringify(testimonials), {
       status: 200,
@@ -44,7 +44,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = new Database('./data/testimonials.sqlite');
+    const db = DatabaseUtil.getDatabase('testimonials.sqlite');
     
     const stmt = db.prepare(`
       INSERT INTO testimonials (slug, name, role, image_path, rating, text, service, sort_order)
@@ -62,7 +62,7 @@ export const POST: APIRoute = async ({ request }) => {
       data.sort_order
     );
     
-    db.close();
+    
 
     return new Response(JSON.stringify({ id: result.lastInsertRowid, ...data }), {
       status: 201,
@@ -86,7 +86,7 @@ export const PUT: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = new Database('./data/testimonials.sqlite');
+    const db = DatabaseUtil.getDatabase('testimonials.sqlite');
     
     const stmt = db.prepare(`
       UPDATE testimonials 
@@ -106,7 +106,7 @@ export const PUT: APIRoute = async ({ request }) => {
       data.id
     );
     
-    db.close();
+    
 
     return new Response(JSON.stringify(data), {
       status: 200,
@@ -139,10 +139,10 @@ export const DELETE: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = new Database('./data/testimonials.sqlite');
+    const db = DatabaseUtil.getDatabase('testimonials.sqlite');
     const stmt = db.prepare('DELETE FROM testimonials WHERE id = ?');
     stmt.run(id);
-    db.close();
+    
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
