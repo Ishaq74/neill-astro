@@ -21,22 +21,20 @@ export const GET: APIRoute = async ({ request }) => {
     const { searchParams } = new URL(request.url);
     const date = searchParams.get('date');
     
-    return await DatabaseUtil.withDatabase('reservations.sqlite');
-    
-    let query = 'SELECT * FROM time_slots ORDER BY date, start_time';
-    let params = [];
-    
-    if (date) {
-      query = 'SELECT * FROM time_slots WHERE date = ? ORDER BY start_time';
-      params = [date];
-    }
-    
-    const slots = db.prepare(query).all(...params);
-    
-
-    return new Response(JSON.stringify(slots), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    return await DatabaseUtil.withDatabase('reservations.sqlite', (db) => {
+      let query = 'SELECT * FROM time_slots ORDER BY date, start_time';
+      let params = [];
+      
+      if (date) {
+        query = 'SELECT * FROM time_slots WHERE date = ? ORDER BY start_time';
+        params = [date];
+      }
+      
+      const slots = db.prepare(query).all(...params);
+      return new Response(JSON.stringify(slots), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
     console.error("Database error:", error);

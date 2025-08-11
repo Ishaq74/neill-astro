@@ -18,13 +18,12 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    return await DatabaseUtil.withDatabase('site_settings.sqlite');
-    const settings = db.prepare('SELECT * FROM site_settings WHERE id = 1').get();
-    
-
-    return new Response(JSON.stringify(settings), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    return await DatabaseUtil.withDatabase('site_settings.sqlite', (db) => {
+      const settings = db.prepare('SELECT * FROM site_settings WHERE id = 1').get();
+      return new Response(JSON.stringify(settings), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
     console.error("Database error:", error);

@@ -18,13 +18,12 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    return await DatabaseUtil.withDatabase('formations.sqlite');
-    const formations = db.prepare('SELECT * FROM formations ORDER BY sort_order').all();
-    
-
-    return new Response(JSON.stringify(formations), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    return await DatabaseUtil.withDatabase('formations.sqlite', (db) => {
+      const formations = db.prepare('SELECT * FROM formations ORDER BY sort_order').all();
+      return new Response(JSON.stringify(formations), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
     console.error("Database error:", error);
