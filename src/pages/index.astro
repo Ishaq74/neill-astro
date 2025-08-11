@@ -37,7 +37,7 @@ const siteSettings = siteSettingsCollection.length > 0 ? siteSettingsCollection[
 >
   
 <div class="min-h-screen">
-  <Header siteSettings={siteSettings} />
+  <Header siteSettings={siteSettings} client:load />
 
   <Hero client:load />
 

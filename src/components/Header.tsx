@@ -22,40 +22,18 @@ interface HeaderProps {
 const Header = ({ siteSettings }: HeaderProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
-  const [currentPath, setCurrentPath] = useState('');
-
-  // Get current path on client side
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setCurrentPath(window.location.pathname);
-    }
-  }, []);
 
   // Navigation items with consistent absolute URLs
   const getNavItems = () => {
-    const isHomePage = currentPath === '/' || currentPath === '';
-    
-    if (isHomePage) {
-      // On homepage, use hash links to sections
-      return [
-        { label: "Accueil", href: "/" },
-        { label: "Services", href: "#services" },
-        { label: "Formations", href: "#formations" },
-        { label: "Galerie", href: "#galerie" },
-        { label: "Équipe", href: "#equipe" },
-        { label: "Contact", href: "#contact" },
-      ];
-    } else {
-      // On other pages, use absolute URLs
-      return [
-        { label: "Accueil", href: "/" },
-        { label: "Services", href: "/services" },
-        { label: "Formations", href: "/formations" },
-        { label: "Galerie", href: "/gallery" },
-        { label: "Équipe", href: "/#equipe" },
-        { label: "Contact", href: "/#contact" },
-      ];
-    }
+    // Always use dedicated page URLs for better navigation consistency
+    return [
+      { label: "Accueil", href: "/" },
+      { label: "Services", href: "/services" },
+      { label: "Formations", href: "/formations" },
+      { label: "Galerie", href: "/gallery" },
+      { label: "Équipe", href: "/#equipe" },
+      { label: "Contact", href: "/#contact" },
+    ];
   };
 
   const navItems = getNavItems();

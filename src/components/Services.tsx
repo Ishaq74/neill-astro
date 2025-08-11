@@ -106,9 +106,8 @@ const Services = ({ services }: ServicesProps) => {
                       size="sm" 
                       className="w-full border-primary text-primary hover:bg-gradient-to-r hover:from-amber-400 hover:to-yellow-500 hover:text-white hover:border-transparent elegant-shadow transition-all duration-300"
                       onClick={() => {
-                        // Navigate to individual service page
-                        const slug = services[index]?.id || `service-${index + 1}`;
-                        window.location.href = `/services/${slug}`;
+                        // Navigate to the general services page
+                        window.location.href = '/services';
                       }}
                     >
                       En savoir plus
