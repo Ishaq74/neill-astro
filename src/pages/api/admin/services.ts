@@ -26,7 +26,11 @@ export const GET: APIRoute = async ({ request }) => {
       });
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur serveur' }), {
+    console.error('Error fetching services:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Erreur serveur', 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -43,32 +47,35 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = DatabaseUtil.getDatabase('services.sqlite');
     
-    const stmt = db.prepare(`
-      INSERT INTO services (slug, title, description, icon_name, image_path, features, price, sort_order)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    
-    const result = stmt.run(
-      data.slug,
-      data.title,
-      data.description,
-      data.icon_name,
-      data.image_path,
-      JSON.stringify(data.features),
-      data.price,
-      data.sort_order
-    );
-    
-    
+    return await DatabaseUtil.withDatabase('services.sqlite', (db) => {
+      const stmt = db.prepare(`
+        INSERT INTO services (slug, title, description, icon_name, image_path, features, price, sort_order)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      
+      const result = stmt.run(
+        data.slug,
+        data.title,
+        data.description,
+        data.icon_name,
+        data.image_path,
+        JSON.stringify(data.features),
+        data.price,
+        data.sort_order
+      );
 
-    return new Response(JSON.stringify({ id: result.lastInsertRowid, ...data }), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' }
+      return new Response(JSON.stringify({ id: result.lastInsertRowid, ...data }), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur lors de la création' }), {
+    console.error('Error creating service:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Erreur lors de la création', 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -85,34 +92,37 @@ export const PUT: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = DatabaseUtil.getDatabase('services.sqlite');
     
-    const stmt = db.prepare(`
-      UPDATE services 
-      SET slug = ?, title = ?, description = ?, icon_name = ?, image_path = ?, features = ?, price = ?, sort_order = ?
-      WHERE id = ?
-    `);
-    
-    stmt.run(
-      data.slug,
-      data.title,
-      data.description,
-      data.icon_name,
-      data.image_path,
-      JSON.stringify(data.features),
-      data.price,
-      data.sort_order,
-      data.id
-    );
-    
-    
+    return await DatabaseUtil.withDatabase('services.sqlite', (db) => {
+      const stmt = db.prepare(`
+        UPDATE services 
+        SET slug = ?, title = ?, description = ?, icon_name = ?, image_path = ?, features = ?, price = ?, sort_order = ?
+        WHERE id = ?
+      `);
+      
+      stmt.run(
+        data.slug,
+        data.title,
+        data.description,
+        data.icon_name,
+        data.image_path,
+        JSON.stringify(data.features),
+        data.price,
+        data.sort_order,
+        data.id
+      );
 
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      return new Response(JSON.stringify(data), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur lors de la mise à jour' }), {
+    console.error('Error updating service:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Erreur lors de la mise à jour', 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -138,17 +148,21 @@ export const DELETE: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = DatabaseUtil.getDatabase('services.sqlite');
-    const stmt = db.prepare('DELETE FROM services WHERE id = ?');
-    stmt.run(id);
-    
+    return await DatabaseUtil.withDatabase('services.sqlite', (db) => {
+      const stmt = db.prepare('DELETE FROM services WHERE id = ?');
+      stmt.run(id);
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur lors de la suppression' }), {
+    console.error('Error deleting service:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Erreur lors de la suppression', 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });

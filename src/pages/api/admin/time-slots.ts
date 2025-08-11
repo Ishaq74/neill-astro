@@ -21,26 +21,25 @@ export const GET: APIRoute = async ({ request }) => {
     const { searchParams } = new URL(request.url);
     const date = searchParams.get('date');
     
-    const db = DatabaseUtil.getDatabase('reservations.sqlite');
-    
-    let query = 'SELECT * FROM time_slots ORDER BY date, start_time';
-    let params = [];
-    
-    if (date) {
-      query = 'SELECT * FROM time_slots WHERE date = ? ORDER BY start_time';
-      params = [date];
-    }
-    
-    const slots = db.prepare(query).all(...params);
-    
-
-    return new Response(JSON.stringify(slots), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    return await DatabaseUtil.withDatabase('reservations.sqlite', (db) => {
+      let query = 'SELECT * FROM time_slots ORDER BY date, start_time';
+      let params = [];
+      
+      if (date) {
+        query = 'SELECT * FROM time_slots WHERE date = ? ORDER BY start_time';
+        params = [date];
+      }
+      
+      const slots = db.prepare(query).all(...params);
+      return new Response(JSON.stringify(slots), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
+    console.error("Database error:", error);
     console.error('Erreur lors de la récupération des créneaux:', error);
-    return new Response(JSON.stringify({ error: 'Erreur serveur' }), {
+    return new Response(JSON.stringify({ error: 'Erreur serveur', details: process.env.NODE_ENV === 'development' ? error.message : undefined }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -66,7 +65,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = DatabaseUtil.getDatabase('reservations.sqlite');
+    return await DatabaseUtil.withDatabase('reservations.sqlite');
     
     const stmt = db.prepare(`
       INSERT INTO time_slots (date, start_time, end_time, service_type, notes, is_available)
@@ -83,6 +82,7 @@ export const POST: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
+    console.error("Database error:", error);
     console.error('Erreur lors de la création du créneau:', error);
     
     if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
@@ -92,7 +92,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
     
-    return new Response(JSON.stringify({ error: 'Erreur lors de la création' }), {
+    return new Response(JSON.stringify({ error: 'Erreur lors de la création', details: process.env.NODE_ENV === 'development' ? error.message : undefined }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -118,7 +118,7 @@ export const PUT: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = DatabaseUtil.getDatabase('reservations.sqlite');
+    return await DatabaseUtil.withDatabase('reservations.sqlite');
     
     const stmt = db.prepare(`
       UPDATE time_slots 
@@ -150,8 +150,9 @@ export const PUT: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
+    console.error("Database error:", error);
     console.error('Erreur lors de la mise à jour du créneau:', error);
-    return new Response(JSON.stringify({ error: 'Erreur lors de la mise à jour' }), {
+    return new Response(JSON.stringify({ error: 'Erreur lors de la mise à jour', details: process.env.NODE_ENV === 'development' ? error.message : undefined }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -177,7 +178,7 @@ export const DELETE: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = DatabaseUtil.getDatabase('reservations.sqlite');
+    return await DatabaseUtil.withDatabase('reservations.sqlite');
     const stmt = db.prepare('DELETE FROM time_slots WHERE id = ?');
     const result = stmt.run(id);
     
@@ -194,8 +195,9 @@ export const DELETE: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
+    console.error("Database error:", error);
     console.error('Erreur lors de la suppression du créneau:', error);
-    return new Response(JSON.stringify({ error: 'Erreur lors de la suppression' }), {
+    return new Response(JSON.stringify({ error: 'Erreur lors de la suppression', details: process.env.NODE_ENV === 'development' ? error.message : undefined }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });

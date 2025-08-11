@@ -18,16 +18,16 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    const db = DatabaseUtil.getDatabase('testimonials.sqlite');
-    const testimonials = db.prepare('SELECT * FROM testimonials ORDER BY sort_order').all();
-    
-
-    return new Response(JSON.stringify(testimonials), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    return await DatabaseUtil.withDatabase('testimonials.sqlite', (db) => {
+      const testimonials = db.prepare('SELECT * FROM testimonials ORDER BY sort_order').all();
+      return new Response(JSON.stringify(testimonials), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur serveur' }), {
+    console.error("Database error:", error);
+    return new Response(JSON.stringify({ error: 'Erreur serveur', details: process.env.NODE_ENV === 'development' ? error.message : undefined }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -44,7 +44,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = DatabaseUtil.getDatabase('testimonials.sqlite');
+    return await DatabaseUtil.withDatabase('testimonials.sqlite');
     
     const stmt = db.prepare(`
       INSERT INTO testimonials (slug, name, role, image_path, rating, text, service, sort_order)
@@ -69,7 +69,8 @@ export const POST: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur lors de la création' }), {
+    console.error("Database error:", error);
+    return new Response(JSON.stringify({ error: 'Erreur lors de la création', details: process.env.NODE_ENV === 'development' ? error.message : undefined }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -86,7 +87,7 @@ export const PUT: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = DatabaseUtil.getDatabase('testimonials.sqlite');
+    return await DatabaseUtil.withDatabase('testimonials.sqlite');
     
     const stmt = db.prepare(`
       UPDATE testimonials 
@@ -113,7 +114,8 @@ export const PUT: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur lors de la mise à jour' }), {
+    console.error("Database error:", error);
+    return new Response(JSON.stringify({ error: 'Erreur lors de la mise à jour', details: process.env.NODE_ENV === 'development' ? error.message : undefined }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -139,7 +141,7 @@ export const DELETE: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = DatabaseUtil.getDatabase('testimonials.sqlite');
+    return await DatabaseUtil.withDatabase('testimonials.sqlite');
     const stmt = db.prepare('DELETE FROM testimonials WHERE id = ?');
     stmt.run(id);
     
@@ -149,7 +151,8 @@ export const DELETE: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur lors de la suppression' }), {
+    console.error("Database error:", error);
+    return new Response(JSON.stringify({ error: 'Erreur lors de la suppression', details: process.env.NODE_ENV === 'development' ? error.message : undefined }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
