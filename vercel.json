@@ -1,14 +1,4 @@
 {
-  "functions": {
-    "src/pages/api/admin/*.ts": {
-      "memory": 1024,
-      "maxDuration": 30
-    },
-    "src/pages/api/*.ts": {
-      "memory": 512,
-      "maxDuration": 15
-    }
-  },
   "routes": [
     {
       "src": "/api/admin/(.*)",

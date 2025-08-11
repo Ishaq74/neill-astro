@@ -22,5 +22,8 @@ export default defineConfig({
   },
 
   integrations: [react(), icon()],
-  adapter: vercel()
+  adapter: vercel({
+    maxDuration: 30,
+    memory: 1024
+  })
 });
