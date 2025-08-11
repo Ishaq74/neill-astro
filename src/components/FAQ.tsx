@@ -72,7 +72,7 @@ const FAQ = ({ faqs }: FAQProps) => {
         },
         {
           question: "Les formations sont-elles certifiantes ?",
-          answer: "Oui, toutes mes formations donnent lieu à une certification Artisan Beauty. La formation professionnelle de 30h délivre une certification reconnue dans le milieu professionnel."
+          answer: "Oui, toutes mes formations donnent lieu à une certification Neill Beauty. La formation professionnelle de 30h délivre une certification reconnue dans le milieu professionnel."
         },
         {
           question: "Le matériel est-il fourni pendant les formations ?",

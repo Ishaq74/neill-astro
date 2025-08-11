@@ -30,7 +30,7 @@ const Footer = ({ siteSettings }: FooterProps) => {
                 </span>
               </div>
               <div>
-                <h3 className="font-elegant text-xl font-bold">{siteSettings?.siteName || "Artisan Beauty"}</h3>
+                <h3 className="font-elegant text-xl font-bold">{siteSettings?.siteName || "Neill Beauty"}</h3>
               </div>
             </div>
             <p className="text-background/70 text-sm leading-relaxed">
@@ -98,7 +98,7 @@ const Footer = ({ siteSettings }: FooterProps) => {
               </div>
               <div className="flex items-center space-x-2">
                 <Mail className="w-4 h-4" />
-                <span>{siteSettings?.contactEmail || "contact@artisanbeauty.fr"}</span>
+                <span>{siteSettings?.contactEmail || "contact@neillbeauty.fr"}</span>
               </div>
             </div>
           </div>
@@ -106,7 +106,7 @@ const Footer = ({ siteSettings }: FooterProps) => {
 
         <div className="border-t border-background/20 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-background/70">
-            <p>&copy; 2024 {siteSettings?.siteName || "Artisan Beauty"}. Tous droits réservés.</p>
+            <p>&copy; 2024 {siteSettings?.siteName || "Neill Beauty"}. Tous droits réservés.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <a href="/legal" className="hover:text-primary transition-colors">Mentions légales</a>
               <a href="/privacy" className="hover:text-primary transition-colors">Politique de confidentialité</a>

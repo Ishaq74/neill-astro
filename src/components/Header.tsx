@@ -51,7 +51,7 @@ const Header = ({ siteSettings }: HeaderProps) => {
             </div>
             <div>
               <h1 className="font-elegant text-xl sm:text-2xl font-bold text-foreground">
-                {siteSettings?.siteName || "Artisan Beauty"}
+                {siteSettings?.siteName || "Neill Beauty"}
               </h1>
             </div>
           </div>
