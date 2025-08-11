@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import Database from 'better-sqlite3';
+import { DatabaseUtil } from '../../../lib/database';
 
 export const prerender = false;
 
@@ -18,9 +18,9 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    const db = new Database('./data/faqs.sqlite');
+    const db = DatabaseUtil.getDatabase('faqs.sqlite');
     const faqs = db.prepare('SELECT * FROM faqs WHERE is_active = 1 ORDER BY sort_order, id').all();
-    db.close();
+    
 
     return new Response(JSON.stringify(faqs), {
       status: 200,
@@ -44,7 +44,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = new Database('./data/faqs.sqlite');
+    const db = DatabaseUtil.getDatabase('faqs.sqlite');
     
     const stmt = db.prepare(`
       INSERT INTO faqs (question, answer, category, sort_order, is_active)
@@ -59,7 +59,7 @@ export const POST: APIRoute = async ({ request }) => {
       data.is_active !== undefined ? data.is_active : 1
     );
     
-    db.close();
+    
 
     return new Response(JSON.stringify({ id: result.lastInsertRowid, ...data }), {
       status: 201,
@@ -83,7 +83,7 @@ export const PUT: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = new Database('./data/faqs.sqlite');
+    const db = DatabaseUtil.getDatabase('faqs.sqlite');
     
     const stmt = db.prepare(`
       UPDATE faqs 
@@ -100,7 +100,7 @@ export const PUT: APIRoute = async ({ request }) => {
       data.id
     );
     
-    db.close();
+    
 
     return new Response(JSON.stringify(data), {
       status: 200,
@@ -133,10 +133,10 @@ export const DELETE: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = new Database('./data/faqs.sqlite');
+    const db = DatabaseUtil.getDatabase('faqs.sqlite');
     const stmt = db.prepare('DELETE FROM faqs WHERE id = ?');
     stmt.run(id);
-    db.close();
+    
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

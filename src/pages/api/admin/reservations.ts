@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import Database from 'better-sqlite3';
+import { DatabaseUtil } from '../../../lib/database';
 
 export const prerender = false;
 
@@ -18,13 +18,12 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    const db = new Database('./data/reservations.sqlite');
-    const reservations = db.prepare('SELECT * FROM reservations ORDER BY created_at DESC').all();
-    db.close();
-
-    return new Response(JSON.stringify(reservations), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    return await DatabaseUtil.withDatabase('reservations.sqlite', (db) => {
+      const reservations = db.prepare('SELECT * FROM reservations ORDER BY created_at DESC').all();
+      return new Response(JSON.stringify(reservations), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: 'Erreur serveur' }), {
@@ -37,30 +36,29 @@ export const GET: APIRoute = async ({ request }) => {
 export const POST: APIRoute = async ({ request }) => {
   try {
     const data = await request.json();
-    const db = new Database('./data/reservations.sqlite');
     
-    const stmt = db.prepare(`
-      INSERT INTO reservations (name, email, phone, service_type, service_name, preferred_date, preferred_time, message, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    
-    const result = stmt.run(
-      data.name,
-      data.email,
-      data.phone,
-      data.service_type,
-      data.service_name,
-      data.preferred_date,
-      data.preferred_time,
-      data.message,
-      data.status || 'pending'
-    );
-    
-    db.close();
+    return await DatabaseUtil.withDatabase('reservations.sqlite', (db) => {
+      const stmt = db.prepare(`
+        INSERT INTO reservations (name, email, phone, service_type, service_name, preferred_date, preferred_time, message, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      
+      const result = stmt.run(
+        data.name,
+        data.email,
+        data.phone,
+        data.service_type,
+        data.service_name,
+        data.preferred_date,
+        data.preferred_time,
+        data.message,
+        data.status || 'pending'
+      );
 
-    return new Response(JSON.stringify({ id: result.lastInsertRowid, ...data }), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' }
+      return new Response(JSON.stringify({ id: result.lastInsertRowid, ...data }), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: 'Erreur lors de la création' }), {
@@ -80,32 +78,31 @@ export const PUT: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = new Database('./data/reservations.sqlite');
     
-    const stmt = db.prepare(`
-      UPDATE reservations 
-      SET name = ?, email = ?, phone = ?, service_type = ?, service_name = ?, preferred_date = ?, preferred_time = ?, message = ?, status = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `);
-    
-    stmt.run(
-      data.name,
-      data.email,
-      data.phone,
-      data.service_type,
-      data.service_name,
-      data.preferred_date,
-      data.preferred_time,
-      data.message,
-      data.status,
-      data.id
-    );
-    
-    db.close();
+    return await DatabaseUtil.withDatabase('reservations.sqlite', (db) => {
+      const stmt = db.prepare(`
+        UPDATE reservations 
+        SET name = ?, email = ?, phone = ?, service_type = ?, service_name = ?, preferred_date = ?, preferred_time = ?, message = ?, status = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `);
+      
+      stmt.run(
+        data.name,
+        data.email,
+        data.phone,
+        data.service_type,
+        data.service_name,
+        data.preferred_date,
+        data.preferred_time,
+        data.message,
+        data.status,
+        data.id
+      );
 
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      return new Response(JSON.stringify(data), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: 'Erreur lors de la mise à jour' }), {
@@ -134,14 +131,14 @@ export const DELETE: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = new Database('./data/reservations.sqlite');
-    const stmt = db.prepare('DELETE FROM reservations WHERE id = ?');
-    stmt.run(id);
-    db.close();
+    return await DatabaseUtil.withDatabase('reservations.sqlite', (db) => {
+      const stmt = db.prepare('DELETE FROM reservations WHERE id = ?');
+      stmt.run(id);
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: 'Erreur lors de la suppression' }), {

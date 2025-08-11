@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
-import Database from 'better-sqlite3';
+import { DatabaseUtil } from '../../../lib/database';
 
-const db = new Database('./data/gallery.sqlite');
+export const prerender = false;
 
 export const GET: APIRoute = async ({ request, url }) => {
   try {
@@ -9,37 +9,39 @@ export const GET: APIRoute = async ({ request, url }) => {
     const category = searchParams.get('category');
     const featured = searchParams.get('featured');
 
-    let query = 'SELECT * FROM gallery';
-    let params: any[] = [];
+    return await DatabaseUtil.withDatabase('gallery.sqlite', (db) => {
+      let query = 'SELECT * FROM gallery';
+      let params: any[] = [];
 
-    const conditions = [];
-    if (category && category !== 'all') {
-      conditions.push('category = ?');
-      params.push(category);
-    }
-    if (featured === 'true') {
-      conditions.push('is_featured = 1');
-    }
+      const conditions = [];
+      if (category && category !== 'all') {
+        conditions.push('category = ?');
+        params.push(category);
+      }
+      if (featured === 'true') {
+        conditions.push('is_featured = 1');
+      }
 
-    if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
-    }
+      if (conditions.length > 0) {
+        query += ' WHERE ' + conditions.join(' AND ');
+      }
 
-    query += ' ORDER BY sort_order ASC, created_at DESC';
+      query += ' ORDER BY sort_order ASC, created_at DESC';
 
-    const stmt = db.prepare(query);
-    const items = stmt.all(...params);
+      const stmt = db.prepare(query);
+      const items = stmt.all(...params);
 
-    return new Response(JSON.stringify({
-      success: true,
-      data: items.map(item => ({
-        ...item,
-        images: item.images ? JSON.parse(item.images) : [],
-        is_featured: Boolean(item.is_featured)
-      }))
-    }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      return new Response(JSON.stringify({
+        success: true,
+        data: items.map(item => ({
+          ...item,
+          images: item.images ? JSON.parse(item.images) : [],
+          is_featured: Boolean(item.is_featured)
+        }))
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
     console.error('Error fetching gallery items:', error);
@@ -243,5 +245,5 @@ export const DELETE: APIRoute = async ({ request, url }) => {
 };
 
 process.on('exit', () => {
-  db.close();
+  
 });

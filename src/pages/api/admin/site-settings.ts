@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import Database from 'better-sqlite3';
+import { DatabaseUtil } from '../../../lib/database';
 
 export const prerender = false;
 
@@ -18,9 +18,9 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    const db = new Database('./data/site_settings.sqlite');
+    const db = DatabaseUtil.getDatabase('site_settings.sqlite');
     const settings = db.prepare('SELECT * FROM site_settings WHERE id = 1').get();
-    db.close();
+    
 
     return new Response(JSON.stringify(settings), {
       status: 200,
@@ -44,7 +44,7 @@ export const PUT: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = new Database('./data/site_settings.sqlite');
+    const db = DatabaseUtil.getDatabase('site_settings.sqlite');
     
     const stmt = db.prepare(`
       UPDATE site_settings 
@@ -73,7 +73,7 @@ export const PUT: APIRoute = async ({ request }) => {
       data.smtp_from_name
     );
     
-    db.close();
+    
 
     return new Response(JSON.stringify(data), {
       status: 200,

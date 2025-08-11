@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import Database from 'better-sqlite3';
+import { DatabaseUtil } from '../../lib/database';
 
 export const prerender = false;
 
@@ -19,7 +19,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Validate date and time if provided
     if (data.preferred_date && data.preferred_time) {
-      const db = new Database('./data/reservations.sqlite');
+      const db = DatabaseUtil.getDatabase('reservations.sqlite');
       
       // Check if the time slot is available
       const slotCheck = db.prepare(`
@@ -28,7 +28,7 @@ export const POST: APIRoute = async ({ request }) => {
       `).get(data.preferred_date, data.preferred_time);
       
       if (!slotCheck) {
-        db.close();
+        
         return new Response(JSON.stringify({ 
           error: 'Ce créneau n\'est pas disponible' 
         }), {
@@ -44,7 +44,7 @@ export const POST: APIRoute = async ({ request }) => {
       `).get(data.preferred_date, data.preferred_time);
       
       if (conflictCheck) {
-        db.close();
+        
         return new Response(JSON.stringify({ 
           error: 'Ce créneau est déjà réservé' 
         }), {
@@ -78,7 +78,7 @@ export const POST: APIRoute = async ({ request }) => {
         WHERE date = ? AND start_time = ?
       `).run(result.lastInsertRowid, data.preferred_date, data.preferred_time);
       
-      db.close();
+      
 
       return new Response(JSON.stringify({ 
         success: true, 
@@ -90,7 +90,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     } else {
       // Create reservation without specific time (will be scheduled later)
-      const db = new Database('./data/reservations.sqlite');
+      const db = DatabaseUtil.getDatabase('reservations.sqlite');
       
       const stmt = db.prepare(`
         INSERT INTO reservations (name, email, phone, service_type, service_name, preferred_date, preferred_time, message, status)
@@ -109,7 +109,7 @@ export const POST: APIRoute = async ({ request }) => {
         'pending'
       );
       
-      db.close();
+      
 
       return new Response(JSON.stringify({ 
         success: true, 

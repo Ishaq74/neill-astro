@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import Database from 'better-sqlite3';
+import { DatabaseUtil } from '../../../lib/database';
 
 export const prerender = false;
 
@@ -18,13 +18,12 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    const db = new Database('./data/services.sqlite');
-    const services = db.prepare('SELECT * FROM services ORDER BY sort_order').all();
-    db.close();
-
-    return new Response(JSON.stringify(services), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    return await DatabaseUtil.withDatabase('services.sqlite', (db) => {
+      const services = db.prepare('SELECT * FROM services ORDER BY sort_order').all();
+      return new Response(JSON.stringify(services), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: 'Erreur serveur' }), {
@@ -44,7 +43,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = new Database('./data/services.sqlite');
+    const db = DatabaseUtil.getDatabase('services.sqlite');
     
     const stmt = db.prepare(`
       INSERT INTO services (slug, title, description, icon_name, image_path, features, price, sort_order)
@@ -62,7 +61,7 @@ export const POST: APIRoute = async ({ request }) => {
       data.sort_order
     );
     
-    db.close();
+    
 
     return new Response(JSON.stringify({ id: result.lastInsertRowid, ...data }), {
       status: 201,
@@ -86,7 +85,7 @@ export const PUT: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = new Database('./data/services.sqlite');
+    const db = DatabaseUtil.getDatabase('services.sqlite');
     
     const stmt = db.prepare(`
       UPDATE services 
@@ -106,7 +105,7 @@ export const PUT: APIRoute = async ({ request }) => {
       data.id
     );
     
-    db.close();
+    
 
     return new Response(JSON.stringify(data), {
       status: 200,
@@ -139,10 +138,10 @@ export const DELETE: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = new Database('./data/services.sqlite');
+    const db = DatabaseUtil.getDatabase('services.sqlite');
     const stmt = db.prepare('DELETE FROM services WHERE id = ?');
     stmt.run(id);
-    db.close();
+    
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

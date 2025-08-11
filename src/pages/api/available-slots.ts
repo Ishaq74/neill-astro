@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import Database from 'better-sqlite3';
+import { DatabaseUtil } from '../../lib/database';
 
 export const prerender = false;
 
@@ -18,7 +18,7 @@ export const GET: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = new Database('./data/reservations.sqlite');
+    const db = DatabaseUtil.getDatabase('reservations.sqlite');
     
     // Get available time slots for the specified date
     let query = `
@@ -48,7 +48,7 @@ export const GET: APIRoute = async ({ request }) => {
     // Filter out slots that are booked
     const trulyAvailable = availableSlots.filter(slot => !bookedTimes.has(slot.start_time));
     
-    db.close();
+    
 
     return new Response(JSON.stringify(trulyAvailable), {
       status: 200,

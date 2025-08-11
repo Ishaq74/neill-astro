@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import Database from 'better-sqlite3';
+import { DatabaseUtil } from '../../../lib/database';
 
 export const prerender = false;
 
@@ -18,9 +18,9 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    const db = new Database('./data/formations.sqlite');
+    const db = DatabaseUtil.getDatabase('formations.sqlite');
     const formations = db.prepare('SELECT * FROM formations ORDER BY sort_order').all();
-    db.close();
+    
 
     return new Response(JSON.stringify(formations), {
       status: 200,
@@ -44,7 +44,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = new Database('./data/formations.sqlite');
+    const db = DatabaseUtil.getDatabase('formations.sqlite');
     
     const stmt = db.prepare(`
       INSERT INTO formations (slug, title, subtitle, description, level, duration, participants, price, features, image_path, badge, sort_order)
@@ -66,7 +66,7 @@ export const POST: APIRoute = async ({ request }) => {
       data.sort_order
     );
     
-    db.close();
+    
 
     return new Response(JSON.stringify({ id: result.lastInsertRowid, ...data }), {
       status: 201,
@@ -90,7 +90,7 @@ export const PUT: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = new Database('./data/formations.sqlite');
+    const db = DatabaseUtil.getDatabase('formations.sqlite');
     
     const stmt = db.prepare(`
       UPDATE formations 
@@ -114,7 +114,7 @@ export const PUT: APIRoute = async ({ request }) => {
       data.id
     );
     
-    db.close();
+    
 
     return new Response(JSON.stringify(data), {
       status: 200,
@@ -147,10 +147,10 @@ export const DELETE: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = new Database('./data/formations.sqlite');
+    const db = DatabaseUtil.getDatabase('formations.sqlite');
     const stmt = db.prepare('DELETE FROM formations WHERE id = ?');
     stmt.run(id);
-    db.close();
+    
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

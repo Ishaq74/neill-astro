@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import Database from 'better-sqlite3';
+import { DatabaseUtil } from '../../../lib/database';
 
 export const prerender = false;
 
@@ -21,7 +21,7 @@ export const GET: APIRoute = async ({ request }) => {
     const { searchParams } = new URL(request.url);
     const date = searchParams.get('date');
     
-    const db = new Database('./data/reservations.sqlite');
+    const db = DatabaseUtil.getDatabase('reservations.sqlite');
     
     let query = 'SELECT * FROM time_slots ORDER BY date, start_time';
     let params = [];
@@ -32,7 +32,7 @@ export const GET: APIRoute = async ({ request }) => {
     }
     
     const slots = db.prepare(query).all(...params);
-    db.close();
+    
 
     return new Response(JSON.stringify(slots), {
       status: 200,
@@ -66,7 +66,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = new Database('./data/reservations.sqlite');
+    const db = DatabaseUtil.getDatabase('reservations.sqlite');
     
     const stmt = db.prepare(`
       INSERT INTO time_slots (date, start_time, end_time, service_type, notes, is_available)
@@ -76,7 +76,7 @@ export const POST: APIRoute = async ({ request }) => {
     const result = stmt.run(date, start_time, end_time, service_type || null, notes || null);
     
     const newSlot = db.prepare('SELECT * FROM time_slots WHERE id = ?').get(result.lastInsertRowid);
-    db.close();
+    
 
     return new Response(JSON.stringify(newSlot), {
       status: 201,
@@ -118,7 +118,7 @@ export const PUT: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = new Database('./data/reservations.sqlite');
+    const db = DatabaseUtil.getDatabase('reservations.sqlite');
     
     const stmt = db.prepare(`
       UPDATE time_slots 
@@ -135,7 +135,7 @@ export const PUT: APIRoute = async ({ request }) => {
     );
     
     if (result.changes === 0) {
-      db.close();
+      
       return new Response(JSON.stringify({ error: 'Créneau non trouvé' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' }
@@ -143,7 +143,7 @@ export const PUT: APIRoute = async ({ request }) => {
     }
     
     const updatedSlot = db.prepare('SELECT * FROM time_slots WHERE id = ?').get(id);
-    db.close();
+    
 
     return new Response(JSON.stringify(updatedSlot), {
       status: 200,
@@ -177,10 +177,10 @@ export const DELETE: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = new Database('./data/reservations.sqlite');
+    const db = DatabaseUtil.getDatabase('reservations.sqlite');
     const stmt = db.prepare('DELETE FROM time_slots WHERE id = ?');
     const result = stmt.run(id);
-    db.close();
+    
     
     if (result.changes === 0) {
       return new Response(JSON.stringify({ error: 'Créneau non trouvé' }), {
