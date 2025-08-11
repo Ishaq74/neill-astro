@@ -18,16 +18,19 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    const db = DatabaseUtil.getDatabase('team.sqlite');
-    const team = db.prepare('SELECT * FROM team_members ORDER BY sort_order').all();
-    
-
-    return new Response(JSON.stringify(team), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    return await DatabaseUtil.withDatabase('team.sqlite', (db) => {
+      const team = db.prepare('SELECT * FROM team_members ORDER BY sort_order').all();
+      return new Response(JSON.stringify(team), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur serveur' }), {
+    console.error("Error fetching team:", error);
+    return new Response(JSON.stringify({ 
+      error: 'Erreur serveur', 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -44,7 +47,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = DatabaseUtil.getDatabase('team.sqlite');
+    return await DatabaseUtil.withDatabase('team.sqlite');
     
     const stmt = db.prepare(`
       INSERT INTO team_members (slug, name, role, speciality, image_path, experience, description, certifications, achievements, social_instagram, social_linkedin, social_email, sort_order)
@@ -74,7 +77,8 @@ export const POST: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur lors de la création' }), {
+    console.error("Database error:", error);
+    return new Response(JSON.stringify({ error: 'Erreur lors de la création', details: process.env.NODE_ENV === 'development' ? error.message : undefined }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -91,7 +95,7 @@ export const PUT: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = DatabaseUtil.getDatabase('team.sqlite');
+    return await DatabaseUtil.withDatabase('team.sqlite');
     
     const stmt = db.prepare(`
       UPDATE team_members 
@@ -123,7 +127,8 @@ export const PUT: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur lors de la mise à jour' }), {
+    console.error("Database error:", error);
+    return new Response(JSON.stringify({ error: 'Erreur lors de la mise à jour', details: process.env.NODE_ENV === 'development' ? error.message : undefined }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -149,7 +154,7 @@ export const DELETE: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = DatabaseUtil.getDatabase('team.sqlite');
+    return await DatabaseUtil.withDatabase('team.sqlite');
     const stmt = db.prepare('DELETE FROM team_members WHERE id = ?');
     stmt.run(id);
     
@@ -159,7 +164,8 @@ export const DELETE: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur lors de la suppression' }), {
+    console.error("Database error:", error);
+    return new Response(JSON.stringify({ error: 'Erreur lors de la suppression', details: process.env.NODE_ENV === 'development' ? error.message : undefined }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });

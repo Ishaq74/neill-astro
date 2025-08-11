@@ -1,16 +1,43 @@
 import Database from 'better-sqlite3';
 import { join } from 'path';
+import { existsSync, mkdirSync, copyFileSync } from 'fs';
 
 /**
  * Database utility class that handles path resolution for different environments
  * Fixes issues with SQLite database access on Vercel serverless functions
  */
 export class DatabaseUtil {
+  private static isVercelEnvironment(): boolean {
+    return process.env.VERCEL === '1' || process.env.VERCEL_ENV !== undefined;
+  }
+
   private static getDatabasePath(dbName: string): string {
-    // Use process.cwd() to get the current working directory
-    // This works both locally and on Vercel
-    const basePath = process.cwd();
-    return join(basePath, 'data', dbName);
+    const isVercel = this.isVercelEnvironment();
+    
+    if (isVercel) {
+      // On Vercel, use /tmp directory which is writable
+      const tmpDbPath = join('/tmp', dbName);
+      const sourceDbPath = join(process.cwd(), 'data', dbName);
+      
+      // Copy database to tmp if it doesn't exist there
+      if (!existsSync(tmpDbPath) && existsSync(sourceDbPath)) {
+        try {
+          // Ensure tmp directory exists
+          mkdirSync('/tmp', { recursive: true });
+          copyFileSync(sourceDbPath, tmpDbPath);
+          console.log(`Database ${dbName} copied to /tmp for Vercel environment`);
+        } catch (error) {
+          console.error(`Failed to copy database ${dbName} to /tmp:`, error);
+          // Fall back to read-only source path
+          return sourceDbPath;
+        }
+      }
+      return tmpDbPath;
+    } else {
+      // Local development - use process.cwd()
+      const basePath = process.cwd();
+      return join(basePath, 'data', dbName);
+    }
   }
 
   /**
@@ -19,8 +46,19 @@ export class DatabaseUtil {
    * @returns Database instance
    */
   static getDatabase(dbName: string): Database.Database {
-    const dbPath = this.getDatabasePath(dbName);
-    return new Database(dbPath);
+    try {
+      const dbPath = this.getDatabasePath(dbName);
+      console.log(`Connecting to database: ${dbPath} (Vercel: ${this.isVercelEnvironment()})`);
+      
+      if (!existsSync(dbPath)) {
+        throw new Error(`Database file not found: ${dbPath}`);
+      }
+      
+      return new Database(dbPath);
+    } catch (error) {
+      console.error(`Failed to connect to database ${dbName}:`, error);
+      throw error;
+    }
   }
 
   /**
@@ -35,9 +73,17 @@ export class DatabaseUtil {
   ): Promise<T> {
     const db = this.getDatabase(dbName);
     try {
-      return queryFn(db);
+      const result = queryFn(db);
+      return result;
+    } catch (error) {
+      console.error(`Database operation failed for ${dbName}:`, error);
+      throw error;
     } finally {
-      db.close();
+      try {
+        db.close();
+      } catch (closeError) {
+        console.error(`Failed to close database ${dbName}:`, closeError);
+      }
     }
   }
 

@@ -18,7 +18,7 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    const db = DatabaseUtil.getDatabase('site_settings.sqlite');
+    return await DatabaseUtil.withDatabase('site_settings.sqlite');
     const settings = db.prepare('SELECT * FROM site_settings WHERE id = 1').get();
     
 
@@ -27,7 +27,8 @@ export const GET: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur serveur' }), {
+    console.error("Database error:", error);
+    return new Response(JSON.stringify({ error: 'Erreur serveur', details: process.env.NODE_ENV === 'development' ? error.message : undefined }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -44,7 +45,7 @@ export const PUT: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = DatabaseUtil.getDatabase('site_settings.sqlite');
+    return await DatabaseUtil.withDatabase('site_settings.sqlite');
     
     const stmt = db.prepare(`
       UPDATE site_settings 
@@ -80,7 +81,8 @@ export const PUT: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur lors de la mise à jour' }), {
+    console.error("Database error:", error);
+    return new Response(JSON.stringify({ error: 'Erreur lors de la mise à jour', details: process.env.NODE_ENV === 'development' ? error.message : undefined }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });

@@ -18,16 +18,19 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    const db = DatabaseUtil.getDatabase('faqs.sqlite');
-    const faqs = db.prepare('SELECT * FROM faqs WHERE is_active = 1 ORDER BY sort_order, id').all();
-    
-
-    return new Response(JSON.stringify(faqs), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    return await DatabaseUtil.withDatabase('faqs.sqlite', (db) => {
+      const faqs = db.prepare('SELECT * FROM faqs WHERE is_active = 1 ORDER BY sort_order, id').all();
+      return new Response(JSON.stringify(faqs), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur serveur' }), {
+    console.error('Error fetching FAQs:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Erreur serveur', 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -44,29 +47,32 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = DatabaseUtil.getDatabase('faqs.sqlite');
     
-    const stmt = db.prepare(`
-      INSERT INTO faqs (question, answer, category, sort_order, is_active)
-      VALUES (?, ?, ?, ?, ?)
-    `);
-    
-    const result = stmt.run(
-      data.question,
-      data.answer,
-      data.category || 'general',
-      data.sort_order || 0,
-      data.is_active !== undefined ? data.is_active : 1
-    );
-    
-    
+    return await DatabaseUtil.withDatabase('faqs.sqlite', (db) => {
+      const stmt = db.prepare(`
+        INSERT INTO faqs (question, answer, category, sort_order, is_active)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+      
+      const result = stmt.run(
+        data.question,
+        data.answer,
+        data.category || 'general',
+        data.sort_order || 0,
+        data.is_active !== undefined ? data.is_active : 1
+      );
 
-    return new Response(JSON.stringify({ id: result.lastInsertRowid, ...data }), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' }
+      return new Response(JSON.stringify({ id: result.lastInsertRowid, ...data }), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur lors de la création' }), {
+    console.error('Error creating FAQ:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Erreur lors de la création', 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -83,31 +89,34 @@ export const PUT: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    const db = DatabaseUtil.getDatabase('faqs.sqlite');
     
-    const stmt = db.prepare(`
-      UPDATE faqs 
-      SET question = ?, answer = ?, category = ?, sort_order = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `);
-    
-    stmt.run(
-      data.question,
-      data.answer,
-      data.category,
-      data.sort_order,
-      data.is_active,
-      data.id
-    );
-    
-    
+    return await DatabaseUtil.withDatabase('faqs.sqlite', (db) => {
+      const stmt = db.prepare(`
+        UPDATE faqs 
+        SET question = ?, answer = ?, category = ?, sort_order = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `);
+      
+      stmt.run(
+        data.question,
+        data.answer,
+        data.category,
+        data.sort_order,
+        data.is_active,
+        data.id
+      );
 
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      return new Response(JSON.stringify(data), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur lors de la mise à jour' }), {
+    console.error('Error updating FAQ:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Erreur lors de la mise à jour', 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -133,17 +142,21 @@ export const DELETE: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = DatabaseUtil.getDatabase('faqs.sqlite');
-    const stmt = db.prepare('DELETE FROM faqs WHERE id = ?');
-    stmt.run(id);
-    
+    return await DatabaseUtil.withDatabase('faqs.sqlite', (db) => {
+      const stmt = db.prepare('DELETE FROM faqs WHERE id = ?');
+      stmt.run(id);
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erreur lors de la suppression' }), {
+    console.error('Error deleting FAQ:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Erreur lors de la suppression', 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
