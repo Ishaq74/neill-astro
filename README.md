@@ -95,10 +95,26 @@ Toutes les commandes sont exécutées depuis la racine du projet :
 | Commande                  | Action                                           |
 | :------------------------ | :----------------------------------------------- |
 | `npm install`             | Installe les dépendances                        |
-| `npm run dev`             | Démarre le serveur de développement sur `localhost:4321` |
-| `npm run build`           | Génère le site de production dans `./dist/`     |
+| `npm run dev`             | Démarre le serveur de développement avec setup automatique |
+| `npm run build`           | Génère le site de production avec setup automatique |
 | `npm run preview`         | Prévisualise le build localement                |
-| `npm run astro ...`       | Lance les commandes CLI Astro                   |
+| `npm run environment-setup` | **🆕 Setup complet de l'environnement**      |
+| `npm run health-check`    | **🆕 Diagnostic complet système**              |
+| `npm run turso-diagnostics` | Diagnostic de la base de données Turso      |
+| `npm run turso-complete-setup` | Setup complet BDD + migration données    |
+| `npm run ci:build`        | **🆕 Build pour CI (sans setup automatique)** |
+| `npm run ci:test`         | **🆕 Tests pour CI**                           |
+| `npm run backup`          | Sauvegarde de la base de données               |
+| `npm run astro ...`       | Lance les commandes CLI Astro                  |
+
+### ⚡ Nouvelles fonctionnalités automatisées
+
+- **🤖 Setup environnement intelligent** : Détecte et configure automatiquement l'environnement
+- **🏥 Health checks complets** : Validation de tous les composants critiques  
+- **🚀 Pipeline CI/CD** : Tests et déploiement automatisés via GitHub Actions
+- **🔧 Gestion d'erreurs robuste** : Diagnostic et réparation automatiques
+
+> 📋 **Pour une configuration CI/CD complète, consultez [`CI-CD_SETUP.md`](./CI-CD_SETUP.md)**
 
 ## 🚀 Installation & Démarrage
 
@@ -172,8 +188,12 @@ Le dossier `dist/` contient les fichiers prêts pour la production.
 
 ## 📋 Documentation Complémentaire
 
+- **[CI-CD_SETUP.md](./CI-CD_SETUP.md)** - **🆕 Configuration CI/CD et déploiement automatisé**
 - [SYNTHESIS.md](./SYNTHESIS.md) - Analyse détaillée du projet
 - [ROADMAP.md](./ROADMAP.md) - Feuille de route développement
+- [TURSO_SETUP.md](./TURSO_SETUP.md) - Configuration base de données Turso
+- [SOLUTION.md](./SOLUTION.md) - Solutions aux problèmes courants
+- [SECURITY.md](./SECURITY.md) - Guide de sécurité
 
 ## 👥 Équipe
 

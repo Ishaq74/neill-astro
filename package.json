@@ -3,15 +3,21 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "dev": "npm run environment-setup && astro dev",
+    "build": "npm run vercel-build-setup && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "backup": "./scripts/backup-database.sh",
     "setup-turso": "node scripts/setup-turso-db.js",
     "migrate-to-turso": "node scripts/migrate-sqlite-to-turso.js",
     "turso-complete-setup": "node scripts/complete-turso-setup.js",
-    "turso-diagnostics": "node scripts/turso-diagnostics.js"
+    "turso-diagnostics": "node scripts/turso-diagnostics.js",
+    "environment-setup": "node scripts/environment-setup.js",
+    "vercel-build-setup": "node scripts/vercel-build-setup.js",
+    "dev-workflow": "node scripts/dev-workflow.js",
+    "health-check": "node scripts/health-check.js",
+    "ci:build": "astro build",
+    "ci:test": "npm run turso-diagnostics && npm run health-check"
   },
   "dependencies": {
     "@astrojs/react": "^4.3.0",
