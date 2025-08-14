@@ -1,5 +1,4 @@
 import { createClient, type Client } from '@libsql/client';
-import { join } from 'path';
 
 /**
  * Compatibility wrapper for libSQL client to match better-sqlite3 API
