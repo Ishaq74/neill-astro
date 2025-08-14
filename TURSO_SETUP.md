@@ -41,24 +41,33 @@ TURSO_AUTH_TOKEN=your_auth_token_here
 
 For Vercel deployment, add these environment variables in your Vercel dashboard.
 
-### 3. Setup Database Schema
+### 3. Setup Database Schema and Migrate Data
 
-Run the schema setup script to create all necessary tables:
-
-```bash
-node scripts/setup-turso-db.js
-```
-
-### 4. Data Migration (Optional)
-
-If you have existing data in SQLite files, you can migrate it using the Turso CLI:
+**Option A: Complete Setup (Recommended)**
+Run the complete setup script to both create schema and migrate existing data:
 
 ```bash
-# Example: Import data from SQLite file
-turso db shell neill-astro < data/formations.sql
+npm run turso-complete-setup
 ```
 
-Or create a migration script to transfer data programmatically.
+**Option B: Step-by-Step Setup**
+If you prefer to run each step separately:
+
+```bash
+# Step 1: Create database schema
+npm run setup-turso
+
+# Step 2: Migrate existing SQLite data to Turso
+npm run migrate-to-turso
+```
+
+### 4. Verify Migration
+
+After running the setup, verify that your data has been migrated successfully:
+
+1. **Check Turso Dashboard**: Visit your Turso dashboard to see the tables and data
+2. **Test Admin Panel**: Access `/admin` on your application  
+3. **Test API Endpoints**: Verify that data is being returned correctly
 
 ### 5. Test the Migration
 
@@ -89,6 +98,56 @@ curl -H "Cookie: admin-session=authenticated" http://localhost:4321/api/admin/fo
 ✅ **Development Experience**: Same SQL syntax, better tooling  
 
 ## Troubleshooting
+
+### "Database is empty" Issue
+If your Turso database appears empty after setting up environment variables:
+
+1. **Run diagnostics first**: Check your current setup status
+   ```bash
+   npm run turso-diagnostics
+   ```
+
+2. **Run the setup script**: The database tables don't exist yet
+   ```bash
+   npm run turso-complete-setup
+   ```
+
+2. **Check environment variables**: Ensure `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` are set
+   ```bash
+   # In your terminal (for local testing)
+   export TURSO_DATABASE_URL="your_database_url"
+   export TURSO_AUTH_TOKEN="your_auth_token"
+   ```
+
+3. **Verify Vercel environment variables**: 
+   - Go to Vercel Dashboard → Your Project → Settings → Environment Variables
+   - Ensure both `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` are set
+   - Redeploy your application after setting variables
+
+### Admin Panel 500 Error
+If you're getting 500 errors in the admin panel:
+
+1. **Database tables missing**: Run the setup script first
+   ```bash
+   npm run setup-turso
+   ```
+
+2. **Check application logs**: 
+   - Local: Check terminal running `npm run dev`
+   - Vercel: Check Function Logs in Vercel dashboard
+
+3. **Test database connection**:
+   ```bash
+   # Test if Turso connection works
+   node -e "
+   import { createClient } from '@libsql/client';
+   const client = createClient({
+     url: process.env.TURSO_DATABASE_URL,
+     authToken: process.env.TURSO_AUTH_TOKEN
+   });
+   client.execute('SELECT 1').then(() => console.log('✅ Connection OK')).catch(err => console.error('❌ Connection failed:', err));
+   " --input-type=module
+   ```
 
 ### Connection Issues
 - Verify `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` are set correctly
