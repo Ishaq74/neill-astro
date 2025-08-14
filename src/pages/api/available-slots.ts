@@ -18,7 +18,7 @@ export const GET: APIRoute = async ({ request }) => {
       });
     }
 
-    const db = DatabaseUtil.getDatabase('reservations.sqlite');
+    const db = DatabaseUtil.getDatabase('reservations');
     
     // Get available time slots for the specified date
     let query = `
@@ -35,7 +35,7 @@ export const GET: APIRoute = async ({ request }) => {
     
     query += ` ORDER BY start_time`;
     
-    const availableSlots = db.prepare(query).all(...params);
+    const availableSlots = await db.prepare(query).all(...params);
     
     // Also check for any existing reservations on this date to double-check availability
     const existingReservations = db.prepare(`

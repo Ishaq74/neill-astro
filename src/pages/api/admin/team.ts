@@ -18,8 +18,8 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    return await DatabaseUtil.withDatabase('team.sqlite', (db) => {
-      const team = db.prepare('SELECT * FROM team_members ORDER BY sort_order').all();
+    return await DatabaseUtil.withDatabase('team', async (db) => {
+      const team = await db.prepare('SELECT * FROM team_members ORDER BY sort_order').all();
       return new Response(JSON.stringify(team), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
@@ -47,14 +47,14 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    return await DatabaseUtil.withDatabase('team.sqlite');
+    return await DatabaseUtil.withDatabase('team');
     
     const stmt = db.prepare(`
       INSERT INTO team_members (slug, name, role, speciality, image_path, experience, description, certifications, achievements, social_instagram, social_linkedin, social_email, sort_order)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     
-    const result = stmt.run(
+    const result = await stmt.run(
       data.slug,
       data.name,
       data.role,
@@ -95,7 +95,7 @@ export const PUT: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    return await DatabaseUtil.withDatabase('team.sqlite');
+    return await DatabaseUtil.withDatabase('team');
     
     const stmt = db.prepare(`
       UPDATE team_members 
@@ -103,7 +103,7 @@ export const PUT: APIRoute = async ({ request }) => {
       WHERE id = ?
     `);
     
-    stmt.run(
+    await stmt.run(
       data.slug,
       data.name,
       data.role,
@@ -154,9 +154,9 @@ export const DELETE: APIRoute = async ({ request }) => {
       });
     }
 
-    return await DatabaseUtil.withDatabase('team.sqlite');
+    return await DatabaseUtil.withDatabase('team');
     const stmt = db.prepare('DELETE FROM team_members WHERE id = ?');
-    stmt.run(id);
+    await stmt.run(id);
     
 
     return new Response(JSON.stringify({ success: true }), {

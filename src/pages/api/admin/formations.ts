@@ -18,8 +18,8 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    return await DatabaseUtil.withDatabase('formations.sqlite', (db) => {
-      const formations = db.prepare('SELECT * FROM formations ORDER BY sort_order').all();
+    return await DatabaseUtil.withDatabase('formations', async (db) => {
+      const formations = await db.prepare('SELECT * FROM formations ORDER BY sort_order').all();
       return new Response(JSON.stringify(formations), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
@@ -44,33 +44,31 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    return await DatabaseUtil.withDatabase('formations.sqlite');
-    
-    const stmt = db.prepare(`
-      INSERT INTO formations (slug, title, subtitle, description, level, duration, participants, price, features, image_path, badge, sort_order)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    
-    const result = stmt.run(
-      data.slug,
-      data.title,
-      data.subtitle,
-      data.description,
-      data.level,
-      data.duration,
-      data.participants,
-      data.price,
-      JSON.stringify(data.features),
-      data.image_path,
-      data.badge,
-      data.sort_order
-    );
-    
-    
-
-    return new Response(JSON.stringify({ id: result.lastInsertRowid, ...data }), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' }
+    return await DatabaseUtil.withDatabase('formations', async (db) => {
+      const stmt = db.prepare(`
+        INSERT INTO formations (slug, title, subtitle, description, level, duration, participants, price, features, image_path, badge, sort_order)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      
+      const result = await stmt.run(
+        data.slug,
+        data.title,
+        data.subtitle,
+        data.description,
+        data.level,
+        data.duration,
+        data.participants,
+        data.price,
+        JSON.stringify(data.features),
+        data.image_path,
+        data.badge,
+        data.sort_order
+      );
+      
+      return new Response(JSON.stringify({ id: result.lastInsertRowid, ...data }), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
     console.error("Database error:", error);
@@ -91,35 +89,33 @@ export const PUT: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    return await DatabaseUtil.withDatabase('formations.sqlite');
-    
-    const stmt = db.prepare(`
-      UPDATE formations 
-      SET slug = ?, title = ?, subtitle = ?, description = ?, level = ?, duration = ?, participants = ?, price = ?, features = ?, image_path = ?, badge = ?, sort_order = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `);
-    
-    stmt.run(
-      data.slug,
-      data.title,
-      data.subtitle,
-      data.description,
-      data.level,
-      data.duration,
-      data.participants,
-      data.price,
-      JSON.stringify(data.features),
-      data.image_path,
-      data.badge,
-      data.sort_order,
-      data.id
-    );
-    
-    
-
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    return await DatabaseUtil.withDatabase('formations', async (db) => {
+      const stmt = db.prepare(`
+        UPDATE formations 
+        SET slug = ?, title = ?, subtitle = ?, description = ?, level = ?, duration = ?, participants = ?, price = ?, features = ?, image_path = ?, badge = ?, sort_order = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `);
+      
+      await stmt.run(
+        data.slug,
+        data.title,
+        data.subtitle,
+        data.description,
+        data.level,
+        data.duration,
+        data.participants,
+        data.price,
+        JSON.stringify(data.features),
+        data.image_path,
+        data.badge,
+        data.sort_order,
+        data.id
+      );
+      
+      return new Response(JSON.stringify(data), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
     console.error("Database error:", error);
@@ -149,14 +145,14 @@ export const DELETE: APIRoute = async ({ request }) => {
       });
     }
 
-    return await DatabaseUtil.withDatabase('formations.sqlite');
-    const stmt = db.prepare('DELETE FROM formations WHERE id = ?');
-    stmt.run(id);
-    
-
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    return await DatabaseUtil.withDatabase('formations', async (db) => {
+      const stmt = db.prepare('DELETE FROM formations WHERE id = ?');
+      await stmt.run(id);
+      
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     });
   } catch (error) {
     console.error("Database error:", error);

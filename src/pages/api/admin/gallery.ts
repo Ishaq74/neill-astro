@@ -9,7 +9,7 @@ export const GET: APIRoute = async ({ request, url }) => {
     const category = searchParams.get('category');
     const featured = searchParams.get('featured');
 
-    return await DatabaseUtil.withDatabase('gallery.sqlite', (db) => {
+    return await DatabaseUtil.withDatabase('gallery', async (db) => {
       let query = 'SELECT * FROM gallery';
       let params: any[] = [];
 
@@ -88,7 +88,7 @@ export const POST: APIRoute = async ({ request }) => {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const result = stmt.run(
+    const result = await stmt.run(
       slug,
       title,
       description || '',
@@ -155,7 +155,7 @@ export const PUT: APIRoute = async ({ request }) => {
       WHERE id = ?
     `);
 
-    const result = stmt.run(
+    const result = await stmt.run(
       slug,
       title,
       description || '',
@@ -213,7 +213,7 @@ export const DELETE: APIRoute = async ({ request, url }) => {
     }
 
     const stmt = db.prepare('DELETE FROM gallery WHERE id = ?');
-    const result = stmt.run(id);
+    const result = await stmt.run(id);
 
     if (result.changes === 0) {
       return new Response(JSON.stringify({

@@ -1,109 +1,146 @@
-import Database from 'better-sqlite3';
-import { join } from 'path';
-import { existsSync, mkdirSync, copyFileSync } from 'fs';
+import { createClient, type Client } from '@libsql/client';
 
 /**
- * Database utility class that handles path resolution for different environments
- * Fixes issues with SQLite database access on Vercel serverless functions
+ * Compatibility wrapper for libSQL client to match better-sqlite3 API
  */
-export class DatabaseUtil {
-  private static isVercelEnvironment(): boolean {
-    return process.env.VERCEL === '1' || process.env.VERCEL_ENV !== undefined;
+class LibSQLWrapper {
+  constructor(private client: Client) {}
+
+  prepare(sql: string) {
+    return {
+      all: async (...params: any[]) => {
+        const result = await this.client.execute({ sql, args: params });
+        return result.rows.map(row => {
+          const obj: any = {};
+          result.columns.forEach((col, idx) => {
+            obj[col] = row[idx];
+          });
+          return obj;
+        });
+      },
+      
+      get: async (...params: any[]) => {
+        const result = await this.client.execute({ sql, args: params });
+        if (result.rows.length === 0) return null;
+        const obj: any = {};
+        result.columns.forEach((col, idx) => {
+          obj[col] = result.rows[0][idx];
+        });
+        return obj;
+      },
+      
+      run: async (...params: any[]) => {
+        const result = await this.client.execute({ sql, args: params });
+        return {
+          changes: result.rowsAffected,
+          lastInsertRowid: result.lastInsertRowid
+        };
+      }
+    };
   }
 
-  private static getDatabasePath(dbName: string): string {
-    const isVercel = this.isVercelEnvironment();
-    
-    if (isVercel) {
-      // On Vercel, use /tmp directory which is writable
-      const tmpDbPath = join('/tmp', dbName);
-      const sourceDbPath = join(process.cwd(), 'data', dbName);
+  async exec(sql: string) {
+    return await this.client.execute(sql);
+  }
+
+  close() {
+    this.client.close();
+  }
+}
+
+/**
+ * Database utility class that handles connections to Turso (libSQL)
+ * Provides seamless serverless database access for production environments
+ */
+export class DatabaseUtil {
+  private static client: Client | null = null;
+
+  private static getClient(): Client {
+    if (!this.client) {
+      const url = process.env.TURSO_DATABASE_URL;
+      const authToken = process.env.TURSO_AUTH_TOKEN;
       
-      // Copy database to tmp if it doesn't exist there
-      if (!existsSync(tmpDbPath) && existsSync(sourceDbPath)) {
-        try {
-          // Ensure tmp directory exists
-          mkdirSync('/tmp', { recursive: true });
-          copyFileSync(sourceDbPath, tmpDbPath);
-          console.log(`Database ${dbName} copied to /tmp for Vercel environment`);
-        } catch (error) {
-          console.error(`Failed to copy database ${dbName} to /tmp:`, error);
-          // Fall back to read-only source path
-          return sourceDbPath;
-        }
+      if (!url) {
+        // For build time and development, use a local database fallback
+        console.warn('TURSO_DATABASE_URL not found, using local fallback (this should not happen in production)');
+        this.client = createClient({
+          url: 'file:local.db'
+        });
+      } else {
+        // Create client with auth token if provided
+        this.client = createClient({
+          url,
+          authToken: authToken || undefined
+        });
       }
-      return tmpDbPath;
-    } else {
-      // Local development - use process.cwd()
-      const basePath = process.cwd();
-      return join(basePath, 'data', dbName);
     }
+    
+    return this.client;
   }
 
   /**
-   * Get a database connection with the correct path for the environment
-   * @param dbName - Name of the database file (e.g., 'reservations.sqlite')
-   * @returns Database instance
+   * Get a database connection to Turso with better-sqlite3 compatibility
+   * @param dbName - Database name (for compatibility, but Turso uses single DB)
+   * @returns LibSQL wrapper with sqlite3-like API
    */
-  static getDatabase(dbName: string): Database.Database {
+  static getDatabase(dbName: string): LibSQLWrapper {
     try {
-      const dbPath = this.getDatabasePath(dbName);
-      console.log(`Connecting to database: ${dbPath} (Vercel: ${this.isVercelEnvironment()})`);
-      
-      if (!existsSync(dbPath)) {
-        throw new Error(`Database file not found: ${dbPath}`);
-      }
-      
-      return new Database(dbPath);
+      const client = this.getClient();
+      console.log(`Connected to Turso database (table context: ${dbName})`);
+      return new LibSQLWrapper(client);
     } catch (error) {
-      console.error(`Failed to connect to database ${dbName}:`, error);
+      console.error(`Failed to connect to Turso database:`, error);
       throw error;
     }
   }
 
   /**
-   * Execute a query and automatically close the database connection
-   * @param dbName - Name of the database file
-   * @param queryFn - Function that takes the database and returns results
+   * Execute a query and return results
+   * @param dbName - Database/table context name
+   * @param queryFn - Function that takes the database client and returns results
    * @returns Query results
    */
   static async withDatabase<T>(
     dbName: string,
-    queryFn: (db: Database.Database) => T
+    queryFn: (db: LibSQLWrapper) => T | Promise<T>
   ): Promise<T> {
     const db = this.getDatabase(dbName);
     try {
-      const result = queryFn(db);
+      const result = await queryFn(db);
       return result;
     } catch (error) {
       console.error(`Database operation failed for ${dbName}:`, error);
       throw error;
-    } finally {
-      try {
-        db.close();
-      } catch (closeError) {
-        console.error(`Failed to close database ${dbName}:`, closeError);
-      }
     }
   }
 
   /**
-   * Get the absolute path to a database file
-   * @param dbName - Name of the database file
-   * @returns Absolute path to the database
+   * Get the database URL for compatibility
+   * @param dbName - Database name (ignored for Turso)
+   * @returns Database URL
    */
   static getDatabaseAbsolutePath(dbName: string): string {
-    return this.getDatabasePath(dbName);
+    return process.env.TURSO_DATABASE_URL || 'no-turso-url-configured';
+  }
+
+  /**
+   * Close the database connection
+   */
+  static close(): void {
+    if (this.client) {
+      this.client.close();
+      this.client = null;
+    }
   }
 }
 
 // Convenience functions for commonly used databases
-export const getReservationsDb = () => DatabaseUtil.getDatabase('reservations.sqlite');
-export const getContactDb = () => DatabaseUtil.getDatabase('contact.sqlite');
-export const getServicesDb = () => DatabaseUtil.getDatabase('services.sqlite');
-export const getTeamDb = () => DatabaseUtil.getDatabase('team.sqlite');
-export const getTestimonialsDb = () => DatabaseUtil.getDatabase('testimonials.sqlite');
-export const getFormationsDb = () => DatabaseUtil.getDatabase('formations.sqlite');
-export const getFaqsDb = () => DatabaseUtil.getDatabase('faqs.sqlite');
-export const getSiteSettingsDb = () => DatabaseUtil.getDatabase('site_settings.sqlite');
-export const getGalleryDb = () => DatabaseUtil.getDatabase('gallery.sqlite');
+export const getReservationsDb = () => DatabaseUtil.getDatabase('reservations');
+export const getContactDb = () => DatabaseUtil.getDatabase('contact');  
+export const getServicesDb = () => DatabaseUtil.getDatabase('services');
+export const getTeamDb = () => DatabaseUtil.getDatabase('team');
+export const getTestimonialsDb = () => DatabaseUtil.getDatabase('testimonials');
+export const getFormationsDb = () => DatabaseUtil.getDatabase('formations');
+export const getFaqsDb = () => DatabaseUtil.getDatabase('faqs');
+export const getSiteSettingsDb = () => DatabaseUtil.getDatabase('site_settings');
+export const getGalleryDb = () => DatabaseUtil.getDatabase('gallery');

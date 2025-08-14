@@ -19,7 +19,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Validate date and time if provided
     if (data.preferred_date && data.preferred_time) {
-      const db = DatabaseUtil.getDatabase('reservations.sqlite');
+      const db = DatabaseUtil.getDatabase('reservations');
       
       // Check if the time slot is available
       const slotCheck = db.prepare(`
@@ -59,7 +59,7 @@ export const POST: APIRoute = async ({ request }) => {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
       
-      const result = stmt.run(
+      const result = await stmt.run(
         data.name,
         data.email,
         data.phone || '',
@@ -90,14 +90,14 @@ export const POST: APIRoute = async ({ request }) => {
       });
     } else {
       // Create reservation without specific time (will be scheduled later)
-      const db = DatabaseUtil.getDatabase('reservations.sqlite');
+      const db = DatabaseUtil.getDatabase('reservations');
       
       const stmt = db.prepare(`
         INSERT INTO reservations (name, email, phone, service_type, service_name, preferred_date, preferred_time, message, status)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
       
-      const result = stmt.run(
+      const result = await stmt.run(
         data.name,
         data.email,
         data.phone || '',

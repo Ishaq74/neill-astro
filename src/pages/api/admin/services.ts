@@ -18,8 +18,8 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    return await DatabaseUtil.withDatabase('services.sqlite', (db) => {
-      const services = db.prepare('SELECT * FROM services ORDER BY sort_order').all();
+    return await DatabaseUtil.withDatabase('services', async (db) => {
+      const services = await db.prepare('SELECT * FROM services ORDER BY sort_order').all();
       return new Response(JSON.stringify(services), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
@@ -48,13 +48,13 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const data = await request.json();
     
-    return await DatabaseUtil.withDatabase('services.sqlite', (db) => {
+    return await DatabaseUtil.withDatabase('services', async (db) => {
       const stmt = db.prepare(`
         INSERT INTO services (slug, title, description, icon_name, image_path, features, price, sort_order)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `);
       
-      const result = stmt.run(
+      const result = await stmt.run(
         data.slug,
         data.title,
         data.description,
@@ -93,14 +93,14 @@ export const PUT: APIRoute = async ({ request }) => {
   try {
     const data = await request.json();
     
-    return await DatabaseUtil.withDatabase('services.sqlite', (db) => {
+    return await DatabaseUtil.withDatabase('services', async (db) => {
       const stmt = db.prepare(`
         UPDATE services 
         SET slug = ?, title = ?, description = ?, icon_name = ?, image_path = ?, features = ?, price = ?, sort_order = ?
         WHERE id = ?
       `);
       
-      stmt.run(
+      await stmt.run(
         data.slug,
         data.title,
         data.description,
@@ -148,9 +148,9 @@ export const DELETE: APIRoute = async ({ request }) => {
       });
     }
 
-    return await DatabaseUtil.withDatabase('services.sqlite', (db) => {
+    return await DatabaseUtil.withDatabase('services', async (db) => {
       const stmt = db.prepare('DELETE FROM services WHERE id = ?');
-      stmt.run(id);
+      await stmt.run(id);
 
       return new Response(JSON.stringify({ success: true }), {
         status: 200,

@@ -18,9 +18,9 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    return await DatabaseUtil.withDatabase('testimonials', async (db) => {
-      const testimonials = await db.prepare('SELECT * FROM testimonials ORDER BY sort_order').all();
-      return new Response(JSON.stringify(testimonials), {
+    return await DatabaseUtil.withDatabase('formations', async (db) => {
+      const formations = await db.prepare('SELECT * FROM formations ORDER BY sort_order').all();
+      return new Response(JSON.stringify(formations), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
       });
@@ -44,21 +44,25 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    return await DatabaseUtil.withDatabase('testimonials');
+    return await DatabaseUtil.withDatabase('formations.sqlite');
     
     const stmt = db.prepare(`
-      INSERT INTO testimonials (slug, name, role, image_path, rating, text, service, sort_order)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO formations (slug, title, subtitle, description, level, duration, participants, price, features, image_path, badge, sort_order)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     
-    const result = await stmt.run(
+    const result = stmt.run(
       data.slug,
-      data.name,
-      data.role,
+      data.title,
+      data.subtitle,
+      data.description,
+      data.level,
+      data.duration,
+      data.participants,
+      data.price,
+      JSON.stringify(data.features),
       data.image_path,
-      data.rating,
-      data.text,
-      data.service,
+      data.badge,
       data.sort_order
     );
     
@@ -87,22 +91,26 @@ export const PUT: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    return await DatabaseUtil.withDatabase('testimonials');
+    return await DatabaseUtil.withDatabase('formations.sqlite');
     
     const stmt = db.prepare(`
-      UPDATE testimonials 
-      SET slug = ?, name = ?, role = ?, image_path = ?, rating = ?, text = ?, service = ?, sort_order = ?
+      UPDATE formations 
+      SET slug = ?, title = ?, subtitle = ?, description = ?, level = ?, duration = ?, participants = ?, price = ?, features = ?, image_path = ?, badge = ?, sort_order = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `);
     
-    await stmt.run(
+    stmt.run(
       data.slug,
-      data.name,
-      data.role,
+      data.title,
+      data.subtitle,
+      data.description,
+      data.level,
+      data.duration,
+      data.participants,
+      data.price,
+      JSON.stringify(data.features),
       data.image_path,
-      data.rating,
-      data.text,
-      data.service,
+      data.badge,
       data.sort_order,
       data.id
     );
@@ -141,9 +149,9 @@ export const DELETE: APIRoute = async ({ request }) => {
       });
     }
 
-    return await DatabaseUtil.withDatabase('testimonials');
-    const stmt = db.prepare('DELETE FROM testimonials WHERE id = ?');
-    await stmt.run(id);
+    return await DatabaseUtil.withDatabase('formations.sqlite');
+    const stmt = db.prepare('DELETE FROM formations WHERE id = ?');
+    stmt.run(id);
     
 
     return new Response(JSON.stringify({ success: true }), {
