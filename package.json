@@ -13,6 +13,7 @@
     "@astrojs/react": "^4.3.0",
     "@astrojs/vercel": "^8.2.5",
     "@iconify-json/mdi": "^1.2.3",
+    "@libsql/client": "^0.15.11",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-aspect-ratio": "^1.1.7",
@@ -47,7 +48,6 @@
     "astro": "^5.12.9",
     "astro-font": "^1.1.0",
     "astro-icon": "^1.1.5",
-    "better-sqlite3": "^12.2.0",
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.1.1",
     "date-fns": "https://registry.npmjs.org/date-fns/-/date-fns-3.6.0.tgz",
@@ -70,9 +70,6 @@
     "tailwindcss": "^4.1.11",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2"
-  },
-  "devDependencies": {
-    "@types/better-sqlite3": "^7.6.13"
   },
   "overrides": {
     "path-to-regexp": "^8.2.0"
