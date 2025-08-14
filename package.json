@@ -7,7 +7,11 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "backup": "./scripts/backup-database.sh"
+    "backup": "./scripts/backup-database.sh",
+    "setup-turso": "node scripts/setup-turso-db.js",
+    "migrate-to-turso": "node scripts/migrate-sqlite-to-turso.js",
+    "turso-complete-setup": "node scripts/complete-turso-setup.js",
+    "turso-diagnostics": "node scripts/turso-diagnostics.js"
   },
   "dependencies": {
     "@astrojs/react": "^4.3.0",
@@ -48,6 +52,7 @@
     "astro": "^5.12.9",
     "astro-font": "^1.1.0",
     "astro-icon": "^1.1.5",
+    "better-sqlite3": "^12.2.0",
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.1.1",
     "date-fns": "https://registry.npmjs.org/date-fns/-/date-fns-3.6.0.tgz",
