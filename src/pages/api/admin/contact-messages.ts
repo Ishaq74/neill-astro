@@ -6,7 +6,7 @@ export const prerender = false;
 // GET - List contact messages
 export const GET: APIRoute = async ({ url }) => {
   try {
-    return await DatabaseUtil.withDatabase('contact.sqlite', (db) => {
+    return await DatabaseUtil.withDatabase('contact', async (db) => {
       const searchParams = url.searchParams;
       const page = parseInt(searchParams.get('page') || '1');
       const limit = parseInt(searchParams.get('limit') || '20');
@@ -44,8 +44,8 @@ export const GET: APIRoute = async ({ url }) => {
       
       params.push(limit, offset);
       
-      const messages = db.prepare(query).all(params);
-      const totalResult = db.prepare(countQuery).get(countParams) as { total: number };
+      const messages = await db.prepare(query).all(params);
+      const totalResult = await db.prepare(countQuery).get(countParams) as { total: number };
       
       return new Response(JSON.stringify({
         success: true,
@@ -77,7 +77,7 @@ export const PUT: APIRoute = async ({ request, params }) => {
   try {
     const data = await request.json();
     
-    return await DatabaseUtil.withDatabase('contact.sqlite', (db) => {
+    return await DatabaseUtil.withDatabase('contact', async (db) => {
       if (data.status) {
         // Update status
         const stmt = db.prepare(`
@@ -86,7 +86,7 @@ export const PUT: APIRoute = async ({ request, params }) => {
           WHERE id = ?
         `);
         
-        const result = stmt.run(data.status, data.id);
+        const result = await stmt.run(data.status, data.id);
         
         if (result.changes === 0) {
           return new Response(JSON.stringify({ 
@@ -106,7 +106,7 @@ export const PUT: APIRoute = async ({ request, params }) => {
           WHERE id = ?
         `);
         
-        const result = stmt.run(data.reply, data.repliedBy || 'Admin', data.id);
+        const result = await stmt.run(data.reply, data.repliedBy || 'Admin', data.id);
         
         if (result.changes === 0) {
           return new Response(JSON.stringify({ 
@@ -142,9 +142,9 @@ export const DELETE: APIRoute = async ({ request }) => {
   try {
     const data = await request.json();
     
-    return await DatabaseUtil.withDatabase('contact.sqlite', (db) => {
+    return await DatabaseUtil.withDatabase('contact', async (db) => {
       const stmt = db.prepare(`DELETE FROM contact_messages WHERE id = ?`);
-      const result = stmt.run(data.id);
+      const result = await stmt.run(data.id);
       
       if (result.changes === 0) {
         return new Response(JSON.stringify({ 

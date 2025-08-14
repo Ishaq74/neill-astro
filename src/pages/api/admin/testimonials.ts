@@ -18,8 +18,8 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    return await DatabaseUtil.withDatabase('testimonials.sqlite', (db) => {
-      const testimonials = db.prepare('SELECT * FROM testimonials ORDER BY sort_order').all();
+    return await DatabaseUtil.withDatabase('testimonials', async (db) => {
+      const testimonials = await db.prepare('SELECT * FROM testimonials ORDER BY sort_order').all();
       return new Response(JSON.stringify(testimonials), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
@@ -44,14 +44,14 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    return await DatabaseUtil.withDatabase('testimonials.sqlite');
+    return await DatabaseUtil.withDatabase('testimonials');
     
     const stmt = db.prepare(`
       INSERT INTO testimonials (slug, name, role, image_path, rating, text, service, sort_order)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
     
-    const result = stmt.run(
+    const result = await stmt.run(
       data.slug,
       data.name,
       data.role,
@@ -87,7 +87,7 @@ export const PUT: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    return await DatabaseUtil.withDatabase('testimonials.sqlite');
+    return await DatabaseUtil.withDatabase('testimonials');
     
     const stmt = db.prepare(`
       UPDATE testimonials 
@@ -95,7 +95,7 @@ export const PUT: APIRoute = async ({ request }) => {
       WHERE id = ?
     `);
     
-    stmt.run(
+    await stmt.run(
       data.slug,
       data.name,
       data.role,
@@ -141,9 +141,9 @@ export const DELETE: APIRoute = async ({ request }) => {
       });
     }
 
-    return await DatabaseUtil.withDatabase('testimonials.sqlite');
+    return await DatabaseUtil.withDatabase('testimonials');
     const stmt = db.prepare('DELETE FROM testimonials WHERE id = ?');
-    stmt.run(id);
+    await stmt.run(id);
     
 
     return new Response(JSON.stringify({ success: true }), {

@@ -116,14 +116,14 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Save to database
-    const contactDb = DatabaseUtil.getDatabase('contact.sqlite');
+    const contactDb = DatabaseUtil.getDatabase('contact');
     
     const stmt = contactDb.prepare(`
       INSERT INTO contact_messages (name, email, phone, subject, message, status)
       VALUES (?, ?, ?, ?, ?, ?)
     `);
     
-    const result = stmt.run(
+    const result = await stmt.run(
       data.name,
       data.email,
       data.phone || null,
@@ -135,7 +135,7 @@ export const POST: APIRoute = async ({ request }) => {
     contactDb.close();
 
     // Get SMTP configuration
-    const settingsDb = DatabaseUtil.getDatabase('site_settings.sqlite');
+    const settingsDb = DatabaseUtil.getDatabase('site_settings');
     const smtpConfig = settingsDb.prepare(`
       SELECT smtp_host, smtp_port, smtp_username, smtp_password, smtp_secure, smtp_from_name, contact_email
       FROM site_settings 

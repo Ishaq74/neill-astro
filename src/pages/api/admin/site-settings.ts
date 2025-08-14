@@ -18,8 +18,8 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    return await DatabaseUtil.withDatabase('site_settings.sqlite', (db) => {
-      const settings = db.prepare('SELECT * FROM site_settings WHERE id = 1').get();
+    return await DatabaseUtil.withDatabase('site_settings', async (db) => {
+      const settings = await db.prepare('SELECT * FROM site_settings WHERE id = 1').get();
       return new Response(JSON.stringify(settings), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
@@ -44,7 +44,7 @@ export const PUT: APIRoute = async ({ request }) => {
 
   try {
     const data = await request.json();
-    return await DatabaseUtil.withDatabase('site_settings.sqlite');
+    return await DatabaseUtil.withDatabase('site_settings');
     
     const stmt = db.prepare(`
       UPDATE site_settings 
@@ -55,7 +55,7 @@ export const PUT: APIRoute = async ({ request }) => {
       WHERE id = 1
     `);
     
-    stmt.run(
+    await stmt.run(
       data.site_name,
       data.site_description,
       data.contact_email,
